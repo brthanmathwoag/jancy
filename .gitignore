@@ -10,3 +10,6 @@ target/
 
 # random stuff
 /scratchpad/
+
+# locally installed sbt launcher goes here 
+/.sbt/
