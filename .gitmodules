@@ -1,0 +1,6 @@
+[submodule "submodules/ansible-modules-core"]
+	path = submodules/ansible-modules-core
+	url = https://github.com/ansible/ansible-modules-core
+[submodule "submodules/ansible-modules-extras"]
+	path = submodules/ansible-modules-extras
+	url = https://github.com/ansible/ansible-modules-extras
