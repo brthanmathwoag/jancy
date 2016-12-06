@@ -1,0 +1,15 @@
+# artifacts
+target/
+
+# intellij idea files
+.idea/
+*.iml
+
+# jancy-modules are auto-generated
+/jancy-modules/src/
+
+# a local copy of ansible modules repo go here
+/submodules/
+
+# random stuff
+/scratchpad/
