@@ -17,15 +17,12 @@ object ClassGenerator {
 
     val outputFile = outputDirectory.resolve(moduleMetadata.className + ".java")
 
-    val moduleClass = ModuleClass(
-      moduleMetadata.namespace,
-      moduleMetadata.className,
-      moduleMetadata.description.getOrElse(moduleMetadata.shortDescription.getOrElse(""))
-    )
+    val model = buildModelForHandlebars(moduleMetadata)
 
     val context = Context
-      .newBuilder(moduleClass)
-      .resolver(FieldValueResolver.INSTANCE)  //workaround to access properties without javabean getters/setters
+      .newBuilder(model)
+      //workaround to access properties without javabean getters/setters
+      .resolver(FieldValueResolver.INSTANCE)
       .build()
 
     //TODO: can throw
@@ -42,9 +39,30 @@ object ClassGenerator {
       new ClassPathTemplateLoader("/templates")
     ).compile("Class")
 
-  private case class ModuleClass(
+  private def buildModelForHandlebars(moduleMetadata: ModuleMetadata): HandlebarsModule =
+    HandlebarsModule(
+      moduleMetadata.namespace,
+      moduleMetadata.className,
+      //TODO: refactor me
+      moduleMetadata.description.getOrElse(moduleMetadata.shortDescription.getOrElse("")),
+      moduleMetadata.options map { o =>
+        HandlebarsOption(
+          o.name,
+          o.description.getOrElse(""),
+          o.originalName
+      )} toArray
+    )
+
+  private case class HandlebarsModule(
     namespace: String,
     name: String,
-    javadoc: String
+    javadoc: String,
+    options: Array[HandlebarsOption]
+  )
+
+  private case class HandlebarsOption(
+    name: String,
+    description: String,
+    originalName: String
   )
 }

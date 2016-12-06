@@ -20,9 +20,7 @@ object MetadataReader {
     val namespace = resolveNamespace(file)
     val name = resolveModuleName(file)
     val className = CapitalizationHelper.snakeCaseToPascalCase(name)
-
     val description = resolveDescription(navigate[String](documentation, List("description")))
-
     val shortDescription = resolveDescription(navigate[String](documentation, List("short_description")))
     val options = readOptions(documentation)
 
@@ -85,7 +83,7 @@ object MetadataReader {
       os.asScala map { o =>
 
         val originalName = o._1
-        val name = CapitalizationHelper.snakeCaseToCamelCase(originalName)
+        val name = escapeJavaKeywords(CapitalizationHelper.snakeCaseToCamelCase(fixInconsistencies(originalName)))
         val description = resolveDescription(navigate[String](o._2, List("description")))
         val default = navigate[String](o._2, List("default"))
         val required = navigate[Boolean](o._2, List("required")).getOrElse(false)
@@ -105,6 +103,17 @@ object MetadataReader {
       } toList
     } getOrElse Seq[OptionMetadata]()
   }
+
+  private def fixInconsistencies(name: String): String =
+    name
+      //workaround for storage.netapp.NetappEHostgroup
+      .replace("-", "_")
+      //workaround for packaging.os.Urpmi
+      .replace(":", "")
+
+  private def escapeJavaKeywords(name: String): String =
+    if (Set("public", "default", "interface", "private", "switch", "goto", "package").contains(name)) name + "_"
+    else name
 
   private def resolveDescription(maybeNode: Option[Any]): Option[String] =
     maybeNode flatMap resolveDescription

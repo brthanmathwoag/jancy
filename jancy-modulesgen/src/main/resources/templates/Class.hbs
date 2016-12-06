@@ -1,8 +1,26 @@
 package {{ namespace }};
 
+import jancy.core.Task;
+
 /***
  * {{ javadoc }}
  */
-public class {{ name }} {
+public class {{ name }} extends jancy.core.Task {
 
+    public {{ name }}(String name) {
+        super(name);
+    }
+
+    protected {{ name }}(Task.State state) {
+        super(state);
+    }
+
+    {{# each options }}
+     /***
+      * {{ description }}
+      */
+     public {{ ../name }} {{ name }}(String {{ name }}) {
+        return new {{ ../name }}(withActionArgument("{{ originalName }}", {{ name }}));
+    }
+    {{/ each}}
 }
