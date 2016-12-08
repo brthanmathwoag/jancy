@@ -1,6 +1,7 @@
 package jancy.modulesgen.discovery
 
 import java.io.File
+import java.util.regex.Pattern
 
 import jancy.modulesgen.helpers.CapitalizationHelper
 import jancy.modulesgen.model.{OptionMetadata, ModuleMetadata}
@@ -19,7 +20,7 @@ object MetadataReader {
   def readModuleMetadata(file: File): ModuleMetadata = {
     val documentation = readDocumentation(file)
     val namespace = resolveNamespace(file)
-    val name = resolveModuleName(file)
+    val name = navigate[String](documentation, List("module")).get
     val className = CapitalizationHelper.snakeCaseToPascalCase(name)
     val description = resolveDescription(navigate[String](documentation, List("description")))
     val shortDescription = resolveDescription(navigate[String](documentation, List("short_description")))
@@ -38,9 +39,9 @@ object MetadataReader {
     val content = managed(Source.fromFile(file))
       .map(_
         .getLines
-        .dropWhile(l => !l.startsWith("DOCUMENTATION = '''"))
+        .dropWhile(!isDocumentationStart(_))
         .drop(1)
-        .takeWhile(l => l != "'''")
+        .takeWhile(!isDocumentationEnd(_))
         .mkString("\n")
         .replace("\\\n", "")  //multi-line python string escapes
         .replace("\\\\", "\\"))
@@ -51,6 +52,12 @@ object MetadataReader {
     new Yaml().load(content)
   }
 
+  private def isDocumentationStart(line: String): Boolean =
+    Pattern.matches("^DOCUMENTATION\\s*=\\s*u?['\"]{3}.*", line)
+
+  private def isDocumentationEnd(line: String): Boolean =
+    Pattern.matches("^['\"]{3}.*", line)
+
   private def resolveNamespace(file: File): String =
     //TODO: will break if the path doesn't start with 'submodules/'
     "jancy.modules." + file
@@ -60,14 +67,6 @@ object MetadataReader {
       .init
       .map(_.replace("_", ""))
       .mkString(".")
-
-
-  private def resolveModuleName(file: File): String = {
-    //TODO: a terrible hack; check if there are stdlib methods for this
-    val filenameStart = file.getParent.length + 1
-    val extensionStart = file.getPath.length - 3
-    file.getPath.substring(filenameStart, extensionStart)
-  }
 
   //TODO: can throw, also terrible hack, also move to a wrapper
   private def navigate[T](root: Any, path: Seq[String]): Option[T] = {
