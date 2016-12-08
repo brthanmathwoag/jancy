@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This script launches sbt if it is in path, or downloads and runs the current sbt-launcher.jar
+# This script launches sbt if it is in path, or downloads and runs the current sbt-launch.jar
 
 SBT_HOME="$(dirname "$0")/.sbt"
 SBT_VERSION='0.13.13'
