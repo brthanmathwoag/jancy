@@ -85,7 +85,7 @@ object MetadataReader {
 
         val originalName = o._1
         val name = escapeJavaKeywords(CapitalizationHelper.snakeCaseToCamelCase(fixInconsistencies(originalName)))
-        val description = resolveDescription(navigate[String](o._2, List("description")))
+        val description = resolveDescription(navigate[String](o._2, List("description"))).map(escapeEndOfComment)
         val default = navigate[String](o._2, List("default"))
         val required = navigate[Boolean](o._2, List("required")).getOrElse(false)
 
@@ -111,6 +111,10 @@ object MetadataReader {
       .replace("-", "_")
       //workaround for packaging.os.Urpmi
       .replace(":", "")
+
+  private def escapeEndOfComment(s: String): String =
+    //workaround for system.cron
+    s.replace("*/", "*&#47;")
 
   private def escapeJavaKeywords(name: String): String =
     if (Set("public", "default", "interface", "private", "switch", "goto", "package").contains(name)) name + "_"
