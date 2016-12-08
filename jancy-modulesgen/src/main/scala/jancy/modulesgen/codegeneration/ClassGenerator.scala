@@ -6,6 +6,7 @@ import java.nio.file.Path
 import com.github.jknack.handlebars.context.FieldValueResolver
 import com.github.jknack.handlebars.{Template, Context, Handlebars}
 import com.github.jknack.handlebars.io.ClassPathTemplateLoader
+import resource._
 import jancy.modulesgen.model.ModuleMetadata
 
 object ClassGenerator {
@@ -28,10 +29,8 @@ object ClassGenerator {
     //TODO: can throw
     outputDirectory.toFile.mkdirs()
 
-    //TODO: resource mgmt
-    val pw = new PrintWriter(outputFile.toString)
-    pw.print(template(context))
-    pw.close()
+    managed(new PrintWriter(outputFile.toString))
+      .foreach(_.print(template(context)))
   }
 
   private lazy val template: Template =

@@ -17,7 +17,8 @@ lazy val jancyModulesGen = project
         mainClass in Compile := Some("jancy.modulesgen.Main"),
         libraryDependencies ++= Seq(
           "org.yaml" % "snakeyaml" % "1.17",
-          "com.github.jknack" % "handlebars" % "4.0.6"
+          "com.github.jknack" % "handlebars" % "4.0.6",
+          "com.jsuereth" %% "scala-arm" % "2.0"
         )
     )
 

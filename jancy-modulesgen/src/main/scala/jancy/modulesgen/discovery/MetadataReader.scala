@@ -5,6 +5,7 @@ import java.io.File
 import jancy.modulesgen.helpers.CapitalizationHelper
 import jancy.modulesgen.model.{OptionMetadata, ModuleMetadata}
 import org.yaml.snakeyaml.Yaml
+import resource._
 
 import scala.collection.JavaConverters._
 import scala.io.Source
@@ -34,16 +35,17 @@ object MetadataReader {
   }
 
   private def readDocumentation(file: File): Any = {
-    val content =
-      Source
-        .fromFile(file)
-        .getLines()
+    val content = managed(Source.fromFile(file))
+      .map(_
+        .getLines
         .dropWhile(l => !l.startsWith("DOCUMENTATION = '''"))
         .drop(1)
         .takeWhile(l => l != "'''")
         .mkString("\n")
         .replace("\\\n", "")  //multi-line python string escapes
-        .replace("\\\\", "\\")
+        .replace("\\\\", "\\"))
+      .opt
+      .getOrElse("")
     //TODO: escape \w\([^\)]+\) -- C(...), etc
 
     new Yaml().load(content)

@@ -4,6 +4,8 @@ import java.io.File
 
 import scala.io.Source
 
+import resource._
+
 /***
   * Picks Ansible module files in a particular path
   */
@@ -25,11 +27,10 @@ object MetadataFilesDiscoverer {
     def hasPythonExtension: Boolean = file.getPath.endsWith(".py")
 
     def containsModuleDefinition: Boolean =
-    //TODO: resource mgmt
-      Source
-        .fromFile(file)
-        .getLines
-        .exists(_.contains("module = AnsibleModule("))
+      managed(Source.fromFile(file))
+        .map(_.getLines.exists(_.contains("module = AnsibleModule(")))
+        .opt
+        .getOrElse(false)
 
     hasPythonExtension && containsModuleDefinition
   }
