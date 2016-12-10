@@ -1,37 +1,21 @@
 package jancy.modulesgen.codegeneration
 
-import java.io.{PrintWriter, File}
-import java.nio.file.Path
-
 import com.github.jknack.handlebars.context.FieldValueResolver
 import com.github.jknack.handlebars.{Template, Context, Handlebars}
 import com.github.jknack.handlebars.io.ClassPathTemplateLoader
-import resource._
 import jancy.modulesgen.model.ModuleMetadata
 
 object ClassGenerator {
 
-  def generateClass(classesRootPath: Path, moduleMetadata: ModuleMetadata): Unit = {
+  def generateClass(moduleMetadata: ModuleMetadata): String =
+    template(createContext(moduleMetadata))
 
-    val outputDirectory = classesRootPath.resolve(
-      moduleMetadata.namespace.replace('.', File.separatorChar))
-
-    val outputFile = outputDirectory.resolve(moduleMetadata.className + ".java")
-
-    val model = buildModelForHandlebars(moduleMetadata)
-
-    val context = Context
-      .newBuilder(model)
+  private def createContext(moduleMetadata: ModuleMetadata) =
+    Context
+      .newBuilder(buildModelForHandlebars(moduleMetadata))
       //workaround to access properties without javabean getters/setters
       .resolver(FieldValueResolver.INSTANCE)
       .build()
-
-    //TODO: can throw
-    outputDirectory.toFile.mkdirs()
-
-    managed(new PrintWriter(outputFile.toString))
-      .foreach(_.print(template(context)))
-  }
 
   private lazy val template: Template =
     new Handlebars(

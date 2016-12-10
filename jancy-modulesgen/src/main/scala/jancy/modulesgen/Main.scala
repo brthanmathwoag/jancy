@@ -1,7 +1,7 @@
 package jancy.modulesgen
 
 import jancy.modulesgen.discovery.{MetadataReader, MetadataFilesDiscoverer}
-import jancy.modulesgen.codegeneration.ClassGenerator
+import jancy.modulesgen.codegeneration.{ClassGenerator, FilesLayout}
 
 import java.nio.file.Paths
 
@@ -13,12 +13,13 @@ object Main {
         "submodules/ansible-modules-core",
         "submodules/ansible-modules-extras")
 
-    val outputJavaClassesPath = Paths.get("jancy-modules/src/main/java/")
-    outputJavaClassesPath.toFile.delete()
+    val filesLayout = new FilesLayout(
+      Paths.get("jancy-modules/src/main/java/"))
 
     ansibleModulesPaths
       .flatMap(MetadataFilesDiscoverer.discoverFiles)
       .map(MetadataReader.readModuleMetadata)
-      .foreach(ClassGenerator.generateClass(outputJavaClassesPath, _))
+      .map({ m => (m, ClassGenerator.generateClass(m)) })
+      .foreach((filesLayout.saveModuleSource _).tupled)
   }
 }
