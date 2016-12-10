@@ -3,7 +3,7 @@ package jancy.core;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Task {
+public abstract class Task {
     protected final State state;
 
     protected Task(State state) {
@@ -22,6 +22,8 @@ public class Task {
     public State withModifier(String key, String value) {
         return state.withActionArgument(key, value);
     }
+
+    public abstract String getModuleName();
 
     public Map<String, String> getActionArguments() {
         return state.getActionArguments();

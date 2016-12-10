@@ -15,6 +15,10 @@ public class {{ name }} extends jancy.core.Task {
         super(state);
     }
 
+    public String getModuleName() {
+        return "{{ originalName }}";
+    }
+
     {{# each options }}
     /**
      * {{ description }}

@@ -2,7 +2,10 @@
 lazy val commonSettings = Seq(
     organization := "jancy",
     version := "0.1.0-SNAPSHOT",
-    scalaVersion := "2.12.0"
+    scalaVersion := "2.12.0",
+    libraryDependencies ++= Seq(
+        "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+    )
 )
 
 lazy val jancyCore = project
@@ -18,8 +21,7 @@ lazy val jancyModulesGen = project
         libraryDependencies ++= Seq(
           "org.yaml" % "snakeyaml" % "1.17",
           "com.github.jknack" % "handlebars" % "4.0.6",
-          "com.jsuereth" %% "scala-arm" % "2.0",
-          "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+          "com.jsuereth" %% "scala-arm" % "2.0"
         )
     )
 
