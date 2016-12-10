@@ -27,4 +27,10 @@ public class {{ name }} extends jancy.core.Task {
         return new {{ ../name }}(withActionArgument("{{ originalName }}", {{ name }}));
     }
     {{/ each}}
+
+    {{# each modifiers }}
+    public {{ ../name }} {{name}}(String {{ name }}) {
+        return new {{ ../name }}(withModifier("{{ originalName }}", {{ name }}));
+    }
+    {{/ each}}
 }

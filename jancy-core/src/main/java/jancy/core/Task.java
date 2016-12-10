@@ -20,7 +20,7 @@ public abstract class Task {
     }
 
     public State withModifier(String key, String value) {
-        return state.withActionArgument(key, value);
+        return state.withModifier(key, value);
     }
 
     public abstract String getModuleName();
