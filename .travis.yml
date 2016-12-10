@@ -5,3 +5,4 @@ script:
     -   git submodule update
     -   sbt jancyModulesGen/run
     -   sbt test
+jdk: openjdk8
