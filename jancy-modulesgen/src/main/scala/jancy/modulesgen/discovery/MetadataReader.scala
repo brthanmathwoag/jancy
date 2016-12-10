@@ -27,8 +27,8 @@ object MetadataReader {
     val options = readOptions(documentation)
 
     ModuleMetadata(
-      name,
       className,
+      name,
       namespace,
       description,
       shortDescription,
@@ -95,12 +95,12 @@ object MetadataReader {
           .map(_.toString)
 
         OptionMetadata(
+          name,
           originalName,
           required,
           description,
           default,
-          choices,
-          name)
+          choices)
       } toList
     } getOrElse Seq[OptionMetadata]()
   }

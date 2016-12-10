@@ -1,8 +1,8 @@
 package jancy.modulesgen.model
 
 case class ModuleMetadata(
-  originalName: String,
   className: String,
+  originalName: String,
   namespace: String,
   description: Option[String],
   shortDescription: Option[String],
