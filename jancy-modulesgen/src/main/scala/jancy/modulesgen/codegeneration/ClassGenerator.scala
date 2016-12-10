@@ -81,9 +81,9 @@ object ClassGenerator {
     HandlebarsModifier("withIndexedItems", "with_indexed_items"),
     HandlebarsModifier("withIni", "with_ini"),
     HandlebarsModifier("withFlattened", "with_flattened"),
-    HandlebarsModifier("withInventoryHostnames", "with_inventory_hostnames"),
+    HandlebarsModifier("withInventoryHostnames", "with_inventory_hostnames")
     //TODO: clashes with an option in OsServer, NovaCompute, Rax*
-    HandlebarsModifier("meta", "meta")
+    //HandlebarsModifier("meta", "meta")
     //TODO: nested modifiers in loop_control
   )
 }
