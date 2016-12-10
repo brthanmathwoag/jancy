@@ -24,28 +24,30 @@ object ClassGenerator {
 
   private def buildModelForHandlebars(moduleMetadata: ModuleMetadata): HandlebarsModule =
     HandlebarsModule(
-      moduleMetadata.namespace,
       moduleMetadata.className,
+      moduleMetadata.originalName,
+      moduleMetadata.namespace,
       //TODO: refactor me
       moduleMetadata.description.getOrElse(moduleMetadata.shortDescription.getOrElse("")),
-      moduleMetadata.options map { o =>
+      moduleMetadata.options.map({ o =>
         HandlebarsOption(
           o.name,
-          o.description.getOrElse(""),
-          o.originalName
-      )} toArray
+          o.originalName,
+          o.description.getOrElse("")
+      )}).toArray
     )
 
   private case class HandlebarsModule(
-    namespace: String,
     name: String,
+    originalName: String,
+    namespace: String,
     javadoc: String,
     options: Array[HandlebarsOption]
   )
 
   private case class HandlebarsOption(
     name: String,
-    description: String,
-    originalName: String
+    originalName: String,
+    description: String
   )
 }

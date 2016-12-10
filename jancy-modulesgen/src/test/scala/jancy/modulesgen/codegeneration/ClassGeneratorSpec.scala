@@ -9,6 +9,7 @@ import scala.annotation.tailrec
 class ClassGeneratorSpec extends FunSpec {
 
   describe ("The ClassGenerator") {
+
     it ("should format multi-line javadocs with paragraphs") {
 
       val input =
@@ -25,7 +26,13 @@ class ClassGeneratorSpec extends FunSpec {
            | * Etiam sit amet vulputate magna, eget tempus augue.
            | */""".stripMargin
 
-      val module = ModuleMetadata("AModule", "a_module", "test", Some(input), None, List())
+      val module = ModuleMetadata(
+        "AModule",
+        "a_module",
+        "test",
+        Some(input),
+        None,
+        List())
 
       val content = ClassGenerator.generateClass(module)
 
@@ -55,14 +62,20 @@ class ClassGeneratorSpec extends FunSpec {
           |     */"""
       ).map(_.stripMargin)
 
-      val module = ModuleMetadata("AModule", "a_module", "test", Some(input1), None, List(
-                OptionMetadata(
-                  "anOption",
-                  "an_option",
-                  true,
-                  Some(input2),
-                  None,
-                  List())))
+      val module = ModuleMetadata(
+        "AModule",
+        "a_module",
+        "test",
+        Some(input1),
+        None,
+        List(
+          OptionMetadata(
+            "anOption",
+            "an_option",
+            true,
+            Some(input2),
+            None,
+            List())))
 
       val content = ClassGenerator.generateClass(module)
 
@@ -82,14 +95,20 @@ class ClassGeneratorSpec extends FunSpec {
           |     */"""
       ).map(_.stripMargin)
 
-      val module = ModuleMetadata("AModule", "a_module", "test", None, None, List(
-                OptionMetadata(
-                  "anOption",
-                  "an_option",
-                  true,
-                  None,
-                  None,
-                  List())))
+      val module = ModuleMetadata(
+        "AModule",
+        "a_module",
+        "test",
+        None,
+        None,
+        List(
+          OptionMetadata(
+            "anOption",
+            "an_option",
+            true,
+            None,
+            None,
+            List())))
 
       val content = ClassGenerator.generateClass(module)
 
