@@ -2,7 +2,7 @@ package {{ namespace }};
 
 import jancy.core.Task;
 
-/***
+/**
  * {{ javadoc }}
  */
 public class {{ name }} extends jancy.core.Task {
@@ -16,10 +16,10 @@ public class {{ name }} extends jancy.core.Task {
     }
 
     {{# each options }}
-     /***
-      * {{ description }}
-      */
-     public {{ ../name }} {{ name }}(String {{ name }}) {
+    /**
+     * {{ description }}
+     */
+    public {{ ../name }} {{ name }}(String {{ name }}) {
         return new {{ ../name }}(withActionArgument("{{ originalName }}", {{ name }}));
     }
     {{/ each}}
