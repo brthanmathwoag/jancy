@@ -25,12 +25,6 @@ object TaskRenderer {
 
     val model = taskArguments + (moduleName -> actionArgumentsString)
 
-    yaml.dump(model.asJava)
-  }
-
-  lazy val yaml: Yaml = {
-    val dumperOptions = new DumperOptions()
-    dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK)
-    new Yaml(dumperOptions)
+    YamlContext.get.dump(model.asJava)
   }
 }
