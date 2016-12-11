@@ -45,5 +45,43 @@ class InventoryRendererSpec extends FunSpec {
 
       assertResult (expected) { actual }
     }
+
+    it ("should work for standalone hosts as well as groups") {
+      val expected =
+        """h1
+          |h2
+          |h3
+          |h4
+          |
+          |[g1]
+          |g1_h1
+          |g1_h2
+          |
+          |[g2]
+          |g2_h1""".stripMargin
+
+      val inventory = new Inventory("inventory")
+        .hosts(Array(
+          new Host("h1"),
+          new Host("h2"),
+          new Host("h3"),
+          new Host("h4")
+        ))
+        .groups(Array(
+          new Group("g1")
+            .hosts(Array(
+              new Host("g1_h1"),
+              new Host("g1_h2")
+            )),
+          new Group("g2")
+            .hosts(Array(
+              new Host("g2_h1")
+            ))
+        ))
+
+      val actual = InventoryRenderer.render(inventory)
+
+      assertResult (expected) { actual }
+    }
   }
 }
