@@ -1,5 +1,6 @@
 package jancy.transpiler.rendering
 
+import jancy.core.Task
 import jancy.modules.files.Copy
 import jancy.modules.packaging.os.Apt
 import org.scalatest.FunSpec
@@ -17,16 +18,17 @@ class TaskRendererSpec extends FunSpec {
           |  src='etc/apache2/'
           |""".stripMargin
 
-      val task = new Copy("Upload httpd config")
+      val task = new Copy()
         .src("etc/apache2/")
         .dest("/etc/apache2/")
+        .toTask("Upload httpd config")
 
       val actual = TaskRenderer.render(task)
 
       assertResult (expected) { actual }
     }
 
-    it("should work with modifiers") {
+    it("should work with task arguments") {
 
       val expected =
         """apt: |-
@@ -37,9 +39,10 @@ class TaskRendererSpec extends FunSpec {
           |when: ansible_os_family == "Debian"
           |""".stripMargin
 
-      val task = new Apt("Install some pre-requisites")
-        .state("present")
-        .name("{{ item }}")
+      val task = new Task("Install some pre-requisites")
+          .action(new Apt()
+            .state("present")
+            .name("{{ item }}"))
         .withItems("apache2, subversion, libapache2-mod-svn, apache2-utils, anacron")
         .when("ansible_os_family == \"Debian\"")
 

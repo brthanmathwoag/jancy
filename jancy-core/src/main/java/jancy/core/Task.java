@@ -2,69 +2,122 @@ package jancy.core;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
-public abstract class Task {
-    protected final State state;
+public class Task {
+    private final Optional<Action> action;
+    private final Map<String, String> arguments;
 
-    protected Task(State state) {
-        this.state = state;
+    public Task(String name) {
+        this.arguments = new HashMap<>();
+        arguments.put("name", name);
+        this.action = Optional.empty();
     }
 
-    protected Task(String name) {
-        state = new State()
-            .withModifier("name", name);
+    private Task(Map<String, String> arguments, Optional<Action> action) {
+        this.arguments = new HashMap<>(arguments);
+        this.action = action;
     }
 
-    public State withActionArgument(String key, String value) {
-        return state.withActionArgument(key, value);
+    private Map<String, String> withArgument(String key, String value) {
+        Map<String, String> argumentsCopy = new HashMap<>(this.arguments);
+        argumentsCopy.put(key, value);
+        return argumentsCopy;
     }
 
-    public State withModifier(String key, String value) {
-        return state.withModifier(key, value);
+    public Task action(Action action) {
+        return new Task(this.arguments, Optional.of(action));
     }
 
-    public abstract String getModuleName();
-
-    public Map<String, String> getActionArguments() {
-        return state.getActionArguments();
+    public Map<String, String> getArguments() {
+        return new HashMap<>(this.arguments);
     }
 
-    public Map<String, String> getModifiers() {
-        return state.getModifiers();
+    public Optional<Action> getAction() {
+        return this.action;
     }
 
-    protected class State {
-        private final Map<String, String> actionArguments;
-        private final Map<String, String> modifiers;
+    public Task notify(String value) {
+        return new Task(withArgument("notify", value), this.action);
+    }
 
-        public State() {
-            actionArguments = new HashMap<>();
-            modifiers = new HashMap<>();
-        }
+    public Task when(String value) {
+        return new Task(withArgument("when", value), this.action);
+    }
 
-        private State(Map<String, String> actionArguments, Map<String, String> modifiers) {
-            this.actionArguments = actionArguments;
-            this.modifiers = modifiers;
-        }
+    public Task withItems(String value) {
+        return new Task(withArgument("with_items", value), this.action);
+    }
 
-        public State withActionArgument(String key, String value) {
-            Map<String, String> actionArgumentsCopy = new HashMap<>(actionArguments);
-            actionArgumentsCopy.put(key, value);
-            return new State(actionArgumentsCopy, modifiers);
-        }
+    public Task withNested(String value) {
+        return new Task(withArgument("with_nested", value), this.action);
+    }
 
-        public State withModifier(String key, String value) {
-            Map<String, String> modifiersCopy = new HashMap<>(modifiers);
-            modifiersCopy.put(key, value);
-            return new State(actionArguments, modifiersCopy);
-        }
+    public Task withDict(String value) {
+        return new Task(withArgument("with_dict", value), this.action);
+    }
 
-        public Map<String, String> getActionArguments() {
-            return new HashMap<>(actionArguments);
-        }
+    public Task withFile(String value) {
+        return new Task(withArgument("with_file", value), this.action);
+    }
 
-        public Map<String, String> getModifiers() {
-            return new HashMap<>(modifiers);
-        }
+    public Task withFileglob(String value) {
+        return new Task(withArgument("with_fileglob", value), this.action);
+    }
+
+    public Task withTogether(String value) {
+        return new Task(withArgument("with_together", value), this.action);
+    }
+
+    public Task withSubelements(String value) {
+        return new Task(withArgument("with_subelements", value), this.action);
+    }
+
+    public Task withSequence(String value) {
+        return new Task(withArgument("with_sequence", value), this.action);
+    }
+
+    public Task withRandomChoice(String value) {
+        return new Task(withArgument("with_random_choice", value), this.action);
+    }
+
+    public Task register(String value) {
+        return new Task(withArgument("register", value), this.action);
+    }
+
+    public Task retries(String value) {
+        return new Task(withArgument("retries", value), this.action);
+    }
+
+    public Task delay(String value) {
+        return new Task(withArgument("delay", value), this.action);
+    }
+
+    public Task withFirstFound(String value) {
+        return new Task(withArgument("with_first_found", value), this.action);
+    }
+
+    public Task withLines(String value) {
+        return new Task(withArgument("with_lines", value), this.action);
+    }
+
+    public Task withIndexedItems(String value) {
+        return new Task(withArgument("with_indexed_items", value), this.action);
+    }
+
+    public Task withIni(String value) {
+        return new Task(withArgument("with_ini", value), this.action);
+    }
+
+    public Task withFlattened(String value) {
+        return new Task(withArgument("with_flattened", value), this.action);
+    }
+
+    public Task withInventoryHostnames(String value) {
+        return new Task(withArgument("with_inventory_hostnames", value), this.action);
+    }
+
+    public Task meta(String value) {
+        return new Task(withArgument("meta", value), this.action);
     }
 }

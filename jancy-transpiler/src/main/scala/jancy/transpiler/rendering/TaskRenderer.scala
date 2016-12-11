@@ -7,18 +7,23 @@ import scala.collection.JavaConverters._
 object TaskRenderer {
 
   def render(task: Task): String = {
-    val modifiers = task.getModifiers.asScala
+    val taskArguments = task.getArguments.asScala
+    //TODO: can throw
+    val moduleName = task.getAction.get.getModuleName
 
-    val argumentsString =
+    val actionArgumentsString =
       task
-        .getActionArguments
+        .getAction
+        //TODO: can throw
+        .get
+        .getArguments
         .asScala
         .toList
         .sorted
         .map({ case (k, v) => s"$k='$v'" })
         .mkString("\n")
 
-    val model = modifiers + (task.getModuleName -> argumentsString)
+    val model = taskArguments + (moduleName -> actionArgumentsString)
 
     yaml.dump(model.asJava)
   }
