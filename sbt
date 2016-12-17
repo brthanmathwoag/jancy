@@ -25,5 +25,5 @@ main() {
     fi
 }
 
-main
+main $@
 
