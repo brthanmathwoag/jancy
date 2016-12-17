@@ -1,3 +1,5 @@
+val snakeyamlVersion = "1.17"
+
 lazy val commonSettings = Seq(
   organization := "jancy",
   version := "0.1.0-SNAPSHOT",
@@ -31,7 +33,7 @@ lazy val jancyModulesGen = project
   .settings(
     mainClass in Compile := Some("jancy.modulesgen.Main"),
     libraryDependencies ++= Seq(
-      "org.yaml" % "snakeyaml" % "1.17",
+      "org.yaml" % "snakeyaml" % snakeyamlVersion,
       "com.github.jknack" % "handlebars" % "4.0.6",
       "com.jsuereth" %% "scala-arm" % "2.0"
     ),
@@ -89,3 +91,6 @@ lazy val jancyTranspiler = project
   .in(file("jancy-transpiler"))
   .dependsOn(jancyModules)
   .settings(commonSettings: _*)
+  .settings(
+    libraryDependencies += "org.yaml" % "snakeyaml" % snakeyamlVersion
+  )
