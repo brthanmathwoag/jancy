@@ -50,7 +50,7 @@ object ClassGenerator {
     val indentation = if (isMemberJavadoc) 4 else 0
     val maxLineLength = 80 - indentation - " * ".length
 
-    indentText(javadocify(wrapTextAround(text.split('\n'), maxLineLength)), indentation).mkString("\n")
+    indentText(javadocify(wrapTextAround(insertParagraphs(text).split('\n'), maxLineLength)), indentation).mkString("\n")
   }
 
 
@@ -71,6 +71,9 @@ object ClassGenerator {
 
   private def indentText(lines: Seq[String], indentation: Int): Seq[String] =
     lines.map((" " * indentation) + _)
+
+  private def insertParagraphs(text: String): String =
+    text.replace("\n", "\n<p>\n")
 
   private case class HandlebarsModule(
     name: String,
