@@ -28,19 +28,49 @@ object ClassGenerator {
       moduleMetadata.originalName,
       moduleMetadata.namespace,
       //TODO: refactor me
-      moduleMetadata
-        .description
-        .getOrElse(moduleMetadata
-            .shortDescription
-            .getOrElse(s"This is a wrapper for ${moduleMetadata.originalName} module")),
+      formatJavadoc(
+        moduleMetadata
+          .description
+          .getOrElse(moduleMetadata
+              .shortDescription
+              .getOrElse(s"This is a wrapper for ${moduleMetadata.originalName} module")),
+        false),
       moduleMetadata.options.map({ o =>
         HandlebarsOption(
           o.name,
           o.originalName,
-          o.description
-            .getOrElse(s"This is a wrapper for ${o.originalName} parameter")
+          formatJavadoc(
+            o.description
+              .getOrElse(s"This is a wrapper for ${o.originalName} parameter"),
+            true)
       )}).toArray
     )
+
+  private def formatJavadoc(text: String, isMemberJavadoc: Boolean): String = {
+    val indentation = if (isMemberJavadoc) 4 else 0
+    val maxLineLength = 80 - indentation - " * ".length
+
+    indentText(javadocify(wrapTextAround(text.split('\n'), maxLineLength)), indentation).mkString("\n")
+  }
+
+
+  private def wrapTextAround(lines: Seq[String], maxLineLength: Int): Seq[String] =
+    lines
+      .flatMap({ l =>
+        val words = l.split(' ')
+        words.foldLeft(List(""))({ (acc: List[String], w: String) =>
+          val currentLine = acc.head
+          val canAppend = (w.length + currentLine.length + 1) < maxLineLength
+          if (canAppend) (currentLine + " " + w).trim :: acc.tail
+          else w :: acc
+      }).reverse
+    })
+
+  private def javadocify(lines: Seq[String]): Seq[String] =
+    Seq("/**") ++ lines.map(" * " + _) ++ Seq(" */")
+
+  private def indentText(lines: Seq[String], indentation: Int): Seq[String] =
+    lines.map((" " * indentation) + _)
 
   private case class HandlebarsModule(
     name: String,
@@ -53,7 +83,7 @@ object ClassGenerator {
   private case class HandlebarsOption(
     name: String,
     originalName: String,
-    description: String
+    javadoc: String
   )
 
   private case class HandlebarsModifier(

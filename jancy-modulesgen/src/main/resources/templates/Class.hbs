@@ -4,9 +4,7 @@ import java.util.Map;
 
 import jancy.core.Action;
 
-/**
- * {{ javadoc }}
- */
+{{ javadoc }}
 public class {{ name }} extends jancy.core.Action {
 
     public {{ name }}() {
@@ -22,9 +20,7 @@ public class {{ name }} extends jancy.core.Action {
     }
 
     {{# each options }}
-    /**
-     * {{ description }}
-     */
+{{ javadoc }}
     public {{ ../name }} {{ name }}(String {{ name }}) {
         return new {{ ../name }}(withArgument("{{ originalName }}", {{ name }}));
     }
