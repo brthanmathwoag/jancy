@@ -1,17 +1,15 @@
-import sbt.classpath.ClasspathUtilities
-
 lazy val commonSettings = Seq(
-    organization := "jancy",
-    version := "0.1.0-SNAPSHOT",
-    scalaVersion := "2.12.0",
-    libraryDependencies ++= Seq(
-        "org.scalatest" %% "scalatest" % "3.0.1" % "test"
-    )
+  organization := "jancy",
+  version := "0.1.0-SNAPSHOT",
+  scalaVersion := "2.12.0",
+  libraryDependencies ++= Seq(
+    "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+  )
 )
 
 lazy val jancyCore = project
-    .in(file("jancy-core"))
-    .settings(commonSettings: _*)
+  .in(file("jancy-core"))
+  .settings(commonSettings: _*)
 
 lazy val submodules = TaskKey[Unit]("submodules", "Initialize submodules")
 
@@ -27,19 +25,19 @@ lazy val submodulesSettings =
   }
 
 lazy val jancyModulesGen = project
-    .in(file("jancy-modulesgen"))
-    .dependsOn(jancyCore)
-    .settings(commonSettings: _*)
-    .settings(
-        mainClass in Compile := Some("jancy.modulesgen.Main"),
-        libraryDependencies ++= Seq(
-          "org.yaml" % "snakeyaml" % "1.17",
-          "com.github.jknack" % "handlebars" % "4.0.6",
-          "com.jsuereth" %% "scala-arm" % "2.0"
-        ),
-      submodulesSettings,
-      compile in Compile := (compile in Compile).dependsOn(submodules).value
-    )
+  .in(file("jancy-modulesgen"))
+  .dependsOn(jancyCore)
+  .settings(commonSettings: _*)
+  .settings(
+    mainClass in Compile := Some("jancy.modulesgen.Main"),
+    libraryDependencies ++= Seq(
+      "org.yaml" % "snakeyaml" % "1.17",
+      "com.github.jknack" % "handlebars" % "4.0.6",
+      "com.jsuereth" %% "scala-arm" % "2.0"
+    ),
+    submodulesSettings,
+    compile in Compile := (compile in Compile).dependsOn(submodules).value
+  )
 
 lazy val generateSources = TaskKey[Seq[java.io.File]]("generateSources", "Generate sources")
 
@@ -60,7 +58,7 @@ lazy val generateSourcesSettings =
 
     val modulesGenLastModified = getLastModificationDate(file("jancy-modulesgen/src"))
     val modulesLastModified = getLastModificationDate(file("jancy-modules/src"))
-    val submodulesLastModified =  getLastModificationDate(file("submodules"))
+    val submodulesLastModified = getLastModificationDate(file("submodules"))
 
     if (modulesGenLastModified >= modulesLastModified || submodulesLastModified > modulesLastModified) {
       streams.value.log.info("jancy-modulesgen changed, regenerating jancy-modules sources ...")
@@ -78,16 +76,16 @@ lazy val generateSourcesSettings =
   }
 
 lazy val jancyModules = project
-    .in(file("jancy-modules"))
-    .dependsOn(jancyCore)
-    .settings(commonSettings: _*)
-    .settings(
-      generateSourcesSettings,
-      sourceGenerators in Compile += generateSources.taskValue,
-      cleanFiles += file("jancy-modules/src")
-    )
+  .in(file("jancy-modules"))
+  .dependsOn(jancyCore)
+  .settings(commonSettings: _*)
+  .settings(
+    generateSourcesSettings,
+    sourceGenerators in Compile += generateSources.taskValue,
+    cleanFiles += file("jancy-modules/src")
+  )
 
 lazy val jancyTranspiler = project
-    .in(file("jancy-transpiler"))
-    .dependsOn(jancyModules)
-    .settings(commonSettings: _*)
+  .in(file("jancy-transpiler"))
+  .dependsOn(jancyModules)
+  .settings(commonSettings: _*)
