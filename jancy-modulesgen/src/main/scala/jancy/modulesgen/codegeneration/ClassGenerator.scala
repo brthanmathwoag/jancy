@@ -28,12 +28,17 @@ object ClassGenerator {
       moduleMetadata.originalName,
       moduleMetadata.namespace,
       //TODO: refactor me
-      moduleMetadata.description.getOrElse(moduleMetadata.shortDescription.getOrElse("")),
+      moduleMetadata
+        .description
+        .getOrElse(moduleMetadata
+            .shortDescription
+            .getOrElse(s"This is a wrapper for ${moduleMetadata.originalName} module")),
       moduleMetadata.options.map({ o =>
         HandlebarsOption(
           o.name,
           o.originalName,
-          o.description.getOrElse("")
+          o.description
+            .getOrElse(s"This is a wrapper for ${o.originalName} parameter")
       )}).toArray
     )
 
