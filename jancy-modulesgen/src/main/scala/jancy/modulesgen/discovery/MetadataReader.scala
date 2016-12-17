@@ -24,7 +24,10 @@ object MetadataReader {
     val className = CapitalizationHelper.snakeCaseToPascalCase(name)
     val description = resolveDescription(navigate[String](documentation, List("description")))
     val shortDescription = resolveDescription(navigate[String](documentation, List("short_description")))
-    val options = readOptions(documentation)
+    val areCommonArgsEnabled = checkIfFileCommonArgsAreEnabled(file)
+    val options = (
+      if (areCommonArgsEnabled) mergeOptionsWithCommonArgs _
+      else identity[Seq[OptionMetadata]] _)(readOptions(documentation))
 
     ModuleMetadata(
       className,
@@ -129,4 +132,43 @@ object MetadataReader {
       case oneline: String => Some(oneline)
       case _ => None
     }
+
+  private def checkIfFileCommonArgsAreEnabled(file: File): Boolean = {
+    //TODO: don't do a second pass for this
+    val pattern = Pattern.compile(".*add_file_common_args\\s?=\\s?True.*")
+    managed(Source.fromFile(file))
+      .map(_
+        .getLines()
+        .exists(l => pattern.matcher(l).find))
+      .opt
+      .getOrElse(false)
+  }
+
+  private def mergeOptionsWithCommonArgs(options: Seq[OptionMetadata]): Seq[OptionMetadata] = {
+    val optionsMap = options
+      .map({ o => (o.originalName, o) })
+      .toMap
+
+    (fileCommonArgs ++ optionsMap)
+      .values
+      .toList
+  }
+
+  private lazy val fileCommonArgs =
+  //TODO: read these from ansible repo. Info in:
+  // lib/ansible/module_utils/basic.py
+  // lib/ansible/utils/module_docs_fragments/files.py
+    Seq(
+      "src", "mode", "owner", "group", "seuser", "serole", "setype", "follow", "content", "backup", "force",
+      "remote_src", "regexp", "delimiter", "directory_mode", "unsafe_writes", "attributes")
+      .map({ moduleName => (
+        moduleName,
+        OptionMetadata(
+          CapitalizationHelper.snakeCaseToCamelCase(moduleName),
+          moduleName,
+          false,
+          None,
+          None,
+          Seq()))
+      }).toMap
 }
