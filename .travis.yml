@@ -4,9 +4,6 @@ jdk:        oraclejdk8
 sudo:       false
 
 script:
-    -   git submodule init
-    -   git submodule update
-    -   sbt jancyModulesGen/run
     -   sbt test
 
 cache:
