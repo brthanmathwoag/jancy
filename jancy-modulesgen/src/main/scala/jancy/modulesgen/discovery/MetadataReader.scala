@@ -4,7 +4,7 @@ import java.io.File
 import java.util.regex.Pattern
 
 import jancy.modulesgen.helpers.CapitalizationHelper
-import jancy.modulesgen.model.{OptionMetadata, ModuleMetadata}
+import jancy.modulesgen.model.{ModuleMetadata, OptionAliasMetadata, OptionMetadata}
 import org.yaml.snakeyaml.Yaml
 import resource._
 
@@ -83,8 +83,8 @@ object MetadataReader {
   private def readOptions(documentation: Any): Seq[OptionMetadata] = {
     val maybeOptions = navigate[java.util.Map[String, Object]](documentation, List("options"))
 
-    maybeOptions map { os =>
-      os.asScala map { o =>
+    maybeOptions.map({ os =>
+      os.asScala.map({ o =>
 
         val originalName = o._1
         val name = escapeJavaKeywords(CapitalizationHelper.snakeCaseToCamelCase(fixInconsistencies(originalName)))
@@ -93,9 +93,19 @@ object MetadataReader {
         val required = navigate[Boolean](o._2, List("required")).getOrElse(false)
 
         val choices = navigate[java.util.List[String]](o._2, List("choices"))
-          .map(_.asScala)
-          .toList
-          .map(_.toString)
+          .map(_.asScala.toList)
+          .getOrElse(List())
+
+        val aliases = navigate[java.util.List[String]](o._2, List("aliases"))
+          .map(_.asScala.toList)
+          .getOrElse(List())
+          .map({ originalName =>
+            val name = escapeJavaKeywords(CapitalizationHelper.snakeCaseToCamelCase(fixInconsistencies(originalName)))
+
+            OptionAliasMetadata(
+              name,
+              originalName)
+          })
 
         OptionMetadata(
           name,
@@ -103,9 +113,10 @@ object MetadataReader {
           required,
           description,
           default,
-          choices)
-      } toList
-    } getOrElse Seq[OptionMetadata]()
+          choices,
+          aliases)
+      }).toList
+    }).getOrElse(Seq[OptionMetadata]())
   }
 
   private def fixInconsistencies(name: String): String =
@@ -120,7 +131,7 @@ object MetadataReader {
     s.replace("*/", "*&#47;")
 
   private def escapeJavaKeywords(name: String): String =
-    if (Set("public", "default", "interface", "private", "switch", "goto", "package").contains(name)) name + "_"
+    if (Set("public", "default", "interface", "private", "switch", "goto", "package", "if").contains(name)) name + "_"
     else name
 
   private def resolveDescription(maybeNode: Option[Any]): Option[String] =
@@ -161,14 +172,15 @@ object MetadataReader {
     Seq(
       "src", "mode", "owner", "group", "seuser", "serole", "setype", "follow", "content", "backup", "force",
       "remote_src", "regexp", "delimiter", "directory_mode", "unsafe_writes", "attributes")
-      .map({ moduleName => (
-        moduleName,
+      .map({ moduleName =>
+        moduleName ->
         OptionMetadata(
           CapitalizationHelper.snakeCaseToCamelCase(moduleName),
           moduleName,
           false,
           None,
           None,
-          Seq()))
+          Seq(),
+          Seq())
       }).toMap
 }

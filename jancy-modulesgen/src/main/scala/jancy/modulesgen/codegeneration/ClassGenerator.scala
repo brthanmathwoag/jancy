@@ -35,15 +35,27 @@ object ClassGenerator {
               .shortDescription
               .getOrElse(s"This is a wrapper for ${moduleMetadata.originalName} module")),
         false),
-      moduleMetadata.options.map({ o =>
-        HandlebarsOption(
+      moduleMetadata.options.flatMap({ o =>
+
+        val description = formatJavadoc(
+          o.description
+            .getOrElse(s"This is a wrapper for ${o.originalName} parameter"),
+          true)
+
+        val mainOption = HandlebarsOption(
           o.name,
           o.originalName,
-          formatJavadoc(
-            o.description
-              .getOrElse(s"This is a wrapper for ${o.originalName} parameter"),
-            true)
-      )}).toArray
+          description)
+
+        val aliasOptions = o.aliases.map({ a =>
+          HandlebarsOption(
+            a.name,
+            a.originalName,
+            description)
+        }).toList
+
+        mainOption :: aliasOptions
+      }).groupBy(_.name).map(_._2.head).toArray
     )
 
   private def formatJavadoc(text: String, isMemberJavadoc: Boolean): String = {

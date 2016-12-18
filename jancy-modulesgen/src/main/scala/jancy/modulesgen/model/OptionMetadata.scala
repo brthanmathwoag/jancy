@@ -6,5 +6,6 @@ case class OptionMetadata(
   isRequired: Boolean,
   description: Option[String],
   default: Option[String],
-  choices: Seq[String]
+  choices: Seq[String],
+  aliases: Seq[OptionAliasMetadata]
 )
