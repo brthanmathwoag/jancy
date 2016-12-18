@@ -14,12 +14,12 @@ public class Group implements Hosts {
         hosts = new Host[0];
     }
 
-    private Group(String name, Host[] hosts) {
+    private Group(String name, Host... hosts) {
         this.name = name;
         this.hosts = hosts;
     }
 
-    public Group hosts(Host[] hosts) {
+    public Group hosts(Host... hosts) {
         return new Group(
             name,
             ArraysHelper.copyIfNotEmpty(hosts));

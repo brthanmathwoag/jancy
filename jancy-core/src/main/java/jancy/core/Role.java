@@ -17,7 +17,7 @@ public class Role {
         this.tasks = tasks;
     }
 
-    public Role tasks(Task[] tasks) {
+    public Role tasks(Task... tasks) {
         return new Role(
             this.name,
             ArraysHelper.copyIfNotEmpty(tasks));

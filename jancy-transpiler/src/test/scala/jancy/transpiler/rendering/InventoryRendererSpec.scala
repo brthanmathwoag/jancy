@@ -23,23 +23,23 @@ class InventoryRendererSpec extends FunSpec {
           |d1""".stripMargin
 
       val inventory = new Inventory("production")
-          .groups(Array(
+          .groups(
             new Group("web")
-              .hosts(Array(
+              .hosts(
                 new Host("w1"),
                 new Host("w2")
-              )),
+              ),
             new Group("services")
-              .hosts(Array(
+              .hosts(
                 new Host("s1"),
                 new Host("s2"),
                 new Host("s3")
-              )),
+              ),
             new Group("database")
-              .hosts(Array(
+              .hosts(
                 new Host("d1")
-              ))
-          ))
+              )
+          )
 
       val actual = InventoryRenderer.render(inventory)
 
@@ -61,23 +61,23 @@ class InventoryRendererSpec extends FunSpec {
           |g2_h1""".stripMargin
 
       val inventory = new Inventory("inventory")
-        .hosts(Array(
+        .hosts(
           new Host("h1"),
           new Host("h2"),
           new Host("h3"),
           new Host("h4")
-        ))
-        .groups(Array(
+        )
+        .groups(
           new Group("g1")
-            .hosts(Array(
+            .hosts(
               new Host("g1_h1"),
               new Host("g1_h2")
-            )),
+            ),
           new Group("g2")
-            .hosts(Array(
+            .hosts(
               new Host("g2_h1")
-            ))
-        ))
+            )
+        )
 
       val actual = InventoryRenderer.render(inventory)
 

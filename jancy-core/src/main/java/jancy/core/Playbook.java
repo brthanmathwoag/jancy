@@ -33,7 +33,7 @@ public class Playbook {
         this.tasks = tasks;
     }
 
-    public Playbook hosts(Hosts[] hosts) {
+    public Playbook hosts(Hosts... hosts) {
         List<String> names = new LinkedList<>();
         for(Hosts h : hosts) {
             names.add(h.getName());
@@ -46,7 +46,7 @@ public class Playbook {
             this.tasks);
     }
 
-    public Playbook roles(Role[] roles) {
+    public Playbook roles(Role... roles) {
         List<String> names = new LinkedList<>();
         for(Role r : roles) {
             names.add(r.getName());
@@ -59,7 +59,7 @@ public class Playbook {
             this.tasks);
     }
 
-    public Playbook tasks(Task[] tasks) {
+    public Playbook tasks(Task... tasks) {
         return new Playbook(
             this.hosts,
             this.name,

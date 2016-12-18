@@ -23,15 +23,15 @@ class PlaybookRendererSpec extends FunSpec {
           |""".stripMargin
 
       val input = new Playbook("webservers")
-        .hosts(Array(
+        .hosts(
           new Host("web01"),
           new Group("web-amazon-us"),
           new Group("web-amazon-eu")
-        )).roles(Array(
+        ).roles(
           new Role("common"),
           new Role("site01"),
           new Role("site02")
-        ))
+        )
 
       val actual = PlaybookRenderer.render(input)
 

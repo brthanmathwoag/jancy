@@ -20,14 +20,14 @@ public class Inventory {
         this.name = name;
     }
 
-    public Inventory hosts(Host[] hosts) {
+    public Inventory hosts(Host... hosts) {
         return new Inventory(
             ArraysHelper.copyIfNotEmpty(hosts),
             this.groups,
             name);
     }
 
-    public Inventory groups(Group[] groups) {
+    public Inventory groups(Group... groups) {
         return new Inventory(
             this.hosts,
             ArraysHelper.copyIfNotEmpty(groups),
