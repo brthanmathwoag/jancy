@@ -1,5 +1,10 @@
 val snakeyamlVersion = "1.17"
 
+def getFilesRecursively(f: File): List[File] = {
+  val subitems = f.listFiles.toList
+  subitems ++ subitems.filter(_.isDirectory).flatMap(getFilesRecursively)
+}
+
 lazy val commonSettings = Seq(
   organization := "jancy",
   version := "0.1.0-SNAPSHOT",
@@ -53,11 +58,6 @@ lazy val generateSourcesSettings =
 
     def maxOrZero(xs: Seq[Long]) = if (xs.isEmpty) 0.toLong else xs.max
 
-    def getFilesRecursively(f: File): List[File] = {
-      val subitems = f.listFiles.toList
-      subitems ++ subitems.filter(_.isDirectory).flatMap(getFilesRecursively)
-    }
-
     val modulesGenLastModified = getLastModificationDate(file("jancy-modulesgen/src"))
     val modulesLastModified = getLastModificationDate(file("jancy-modules/src"))
     val submodulesLastModified = getLastModificationDate(file("submodules"))
@@ -85,6 +85,44 @@ lazy val jancyModules = project
     generateSourcesSettings,
     sourceGenerators in Compile += generateSources.taskValue,
     cleanFiles += file("jancy-modules/src")
+  )
+
+lazy val jancyCommon = project
+  .in(file("jancy-common"))
+  .dependsOn(jancyModules, jancyCore)
+  .settings(commonSettings: _*)
+  .settings(
+    name := "jancy-common",
+    artifactName in (Compile, packageBin) := { (scalaVersion: ScalaVersion, module: ModuleID, artifact: Artifact) =>
+      artifact.name + "-" + module.revision + "." + artifact.extension
+    },
+   artifactName in (Compile, packageSrc) := { (scalaVersion: ScalaVersion, module: ModuleID, artifact: Artifact) =>
+      artifact.name + "-" + module.revision + "-sources." + artifact.extension
+    },
+    mappings in (Compile, packageBin) ++= {
+      Seq("jancy-core", "jancy-modules")
+        .map(_ + "/target/scala-2.12/classes")
+        .flatMap({ p =>
+          getFilesRecursively(file(p))
+            .filter(_.getName.endsWith(".class"))
+            .map({ f =>
+              val output = f.getPath.substring(p.length + 1)
+              (f, output)
+            })
+        })
+    },
+    mappings in (Compile, packageSrc) ++= {
+      Seq("jancy-core", "jancy-modules")
+        .map(_ + "/src/main/java")
+        .flatMap({ p =>
+          getFilesRecursively(file(p))
+            .filter(_.getName.endsWith(".java"))
+            .map({ f =>
+              val output = f.getPath.substring(p.length + 1)
+              (f, output)
+            })
+        })
+    }
   )
 
 lazy val jancyTranspiler = project
