@@ -7,12 +7,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Playbook {
+    private final Handler[] handlers;
     private final String[] hosts;
     private final String name;
     private final String[] roles;
     private final Task[] tasks;
 
-//    private final Handler[] handlers;
 //    private final Template[] templates;
 //    private final File[] files;
 //    private final Var[] vars;
@@ -20,17 +20,28 @@ public class Playbook {
 //    private final Meta[] meta;
 
     public Playbook(String name) {
+        this.handlers = new Handler[0];
         this.hosts = new String[0];
         this.name = name;
         this.roles = new String[0];
         this.tasks = new Task[0];
     }
 
-    private Playbook(String[] hosts, String name, String[] roles, Task[] tasks) {
+    private Playbook(Handler[] handlers, String[] hosts, String name, String[] roles, Task[] tasks) {
+        this.handlers = handlers;
         this.hosts = hosts;
         this.name = name;
         this.roles = roles;
         this.tasks = tasks;
+    }
+
+    public Playbook handlers(Handler... handlers) {
+        return new Playbook(
+            ArraysHelper.copyIfNotEmpty(handlers),
+            this.hosts,
+            this.name,
+            this.roles,
+            this.tasks);
     }
 
     public Playbook hosts(Hosts... hosts) {
@@ -40,6 +51,7 @@ public class Playbook {
         }
 
         return new Playbook(
+            this.handlers,
             names.toArray(new String[names.size()]),
             this.name,
             this.roles,
@@ -53,6 +65,7 @@ public class Playbook {
         }
 
         return new Playbook(
+            this.handlers,
             this.hosts,
             this.name,
             names.toArray(new String[names.size()]),
@@ -61,10 +74,15 @@ public class Playbook {
 
     public Playbook tasks(Task... tasks) {
         return new Playbook(
+            this.handlers,
             this.hosts,
             this.name,
             this.roles,
             ArraysHelper.copyIfNotEmpty(tasks));
+    }
+
+    public Handler[] getHandlers() {
+        return ArraysHelper.copyIfNotEmpty(this.handlers);
     }
 
     public String[] getHosts() {

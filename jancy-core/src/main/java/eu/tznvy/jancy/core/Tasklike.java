@@ -3,19 +3,22 @@ package eu.tznvy.jancy.core;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
-public abstract class Action {
-    private final Map<String, String> arguments;
+public abstract class Tasklike {
+    protected final Optional<Action> action;
+    protected final Map<String, String> arguments;
 
-    protected Action() {
+    protected Tasklike(String name) {
         this.arguments = new HashMap<>();
+        arguments.put("name", name);
+        this.action = Optional.empty();
     }
 
-    protected Action(Map<String, String> arguments) {
+    protected Tasklike(Map<String, String> arguments, Optional<Action> action) {
         this.arguments = new HashMap<>(arguments);
+        this.action = action;
     }
-
-    public abstract String getModuleName();
 
     protected Map<String, String> withArgument(String key, String value) {
         Map<String, String> argumentsCopy = new HashMap<>(this.arguments);
@@ -27,11 +30,7 @@ public abstract class Action {
         return new HashMap<>(this.arguments);
     }
 
-    public Task toTask(String name) {
-        return new Task(name).action(this);
-    }
-
-    public Handler toHandler(String name) {
-        return new Handler(name).action(this);
+    public Optional<Action> getAction() {
+        return this.action;
     }
 }

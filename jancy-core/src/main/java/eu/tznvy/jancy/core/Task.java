@@ -4,37 +4,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public class Task {
-    private final Optional<Action> action;
-    private final Map<String, String> arguments;
+public class Task extends Tasklike {
 
     public Task(String name) {
-        this.arguments = new HashMap<>();
-        arguments.put("name", name);
-        this.action = Optional.empty();
+        super(name);
     }
 
     private Task(Map<String, String> arguments, Optional<Action> action) {
-        this.arguments = new HashMap<>(arguments);
-        this.action = action;
-    }
-
-    private Map<String, String> withArgument(String key, String value) {
-        Map<String, String> argumentsCopy = new HashMap<>(this.arguments);
-        argumentsCopy.put(key, value);
-        return argumentsCopy;
+        super(arguments, action);
     }
 
     public Task action(Action action) {
         return new Task(this.arguments, Optional.of(action));
-    }
-
-    public Map<String, String> getArguments() {
-        return new HashMap<>(this.arguments);
-    }
-
-    public Optional<Action> getAction() {
-        return this.action;
     }
 
     public Task notify(String value) {
