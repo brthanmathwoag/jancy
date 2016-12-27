@@ -7,7 +7,7 @@ def getFilesRecursively(f: File): List[File] = {
 }
 
 lazy val commonSettings = Seq(
-  organization := "jancy",
+  organization := "eu.tznvy",
   version := "0.1.0-SNAPSHOT",
   scalaVersion := "2.12.0",
   libraryDependencies ++= Seq(
@@ -38,7 +38,7 @@ lazy val jancyModulesGen = project
   .dependsOn(jancyCore)
   .settings(commonSettings: _*)
   .settings(
-    mainClass in Compile := Some("jancy.modulesgen.Main"),
+    mainClass in Compile := Some("eu.tznvy.jancy.modulesgen.Main"),
     libraryDependencies ++= Seq(
       "org.yaml" % "snakeyaml" % snakeyamlVersion,
       "com.github.jknack" % "handlebars" % "4.0.6",
@@ -71,7 +71,7 @@ lazy val generateSourcesSettings =
 
       (testLoader in Test in jancyModulesGen)
         .value
-        .loadClass("jancy.modulesgen.Main")
+        .loadClass("eu.tznvy.jancy.modulesgen.Main")
         .getMethod("main", Array[String]().getClass)
         .invoke(null, Array[String]())
 
