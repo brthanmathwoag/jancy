@@ -4,7 +4,7 @@ jdk:        oraclejdk8
 sudo:       false
 
 script:
-    -   sbt test
+    -   sbt test buildAll
 
 cache:
     directories:

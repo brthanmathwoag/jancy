@@ -141,3 +141,9 @@ lazy val jancyTranspiler = project
     assemblyOption in assembly := (assemblyOption in assembly).value.copy(prependShellScript = Some(sbtassembly.AssemblyPlugin.defaultShellScript)),
     assemblyJarName in assembly := s"${name.value}"
   )
+
+TaskKey[Unit]("buildAll", "Build all artifacts") := {
+  (packageBin in Compile in jancyCommon).value
+  (packageSrc in Compile in jancyCommon).value
+  (assembly in jancyTranspiler).value
+}
