@@ -101,4 +101,8 @@ public class Task extends Tasklike {
     public Task meta(String value) {
         return new Task(withArgument("meta", value), this.action);
     }
+
+    public Task tags(Object... value) {
+        return new Task(withArgument("tags", value), this.action);
+    }
 }

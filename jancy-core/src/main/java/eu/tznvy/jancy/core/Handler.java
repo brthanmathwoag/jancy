@@ -96,4 +96,8 @@ public class Handler extends Tasklike {
     public Handler meta(String value) {
         return new Handler(withArgument("meta", value), this.action);
     }
+
+    public Handler tags(Object... value) {
+        return new Handler(withArgument("tags", value), this.action);
+    }
 }
