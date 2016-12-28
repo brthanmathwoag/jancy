@@ -14,7 +14,7 @@ object Main {
         .getConfigurationFactoriesInJar(programArgs.jar)
         .foreach({ cf =>
           val configuration = cf.build
-          val outputPath = Paths.get(programArgs.output.getPath, cf.getName)
+          val outputPath = Paths.get(programArgs.output.getPath, configuration.getName)
           ConfigurationRenderer.render(configuration, outputPath)
         })
     })
