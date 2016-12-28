@@ -98,6 +98,7 @@ class PlaybookRendererSpec extends FunSpec {
           |    state='reloaded'
           |hosts:
           |- web01
+          |- web02
           |tasks:
           |- name: Install httpd
           |  apt: |-
@@ -112,7 +113,8 @@ class PlaybookRendererSpec extends FunSpec {
 
       val input = new Playbook("webservers")
         .hosts(
-          new Host("web01"))
+          new Host("web01"),
+          new Host("web02"))
         .tasks(
           new Apt()
             .name("apache2")
@@ -128,6 +130,23 @@ class PlaybookRendererSpec extends FunSpec {
             .name("apache2")
             .state("reloaded")
             .toHandler("Reload httpd"))
+
+      val actual = PlaybookRenderer.render(input)
+
+      assertResult (expected) { actual }
+    }
+
+    it("should render single-element arrays as strings") {
+
+      val expected =
+        """name: webservers
+          |hosts: web-01
+          |roles: web
+          |""".stripMargin
+
+      val input = new Playbook("webservers")
+        .hosts(new Host("web-01"))
+        .roles(new Role("web"))
 
       val actual = PlaybookRenderer.render(input)
 
