@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public abstract class Tasklike {
     protected final Optional<Action> action;
-    protected final Map<String, String> arguments;
+    protected final Map<String, Object> arguments;
 
     protected Tasklike(String name) {
         this.arguments = new HashMap<>();
@@ -15,18 +15,18 @@ public abstract class Tasklike {
         this.action = Optional.empty();
     }
 
-    protected Tasklike(Map<String, String> arguments, Optional<Action> action) {
+    protected Tasklike(Map<String, Object> arguments, Optional<Action> action) {
         this.arguments = new HashMap<>(arguments);
         this.action = action;
     }
 
-    protected Map<String, String> withArgument(String key, String value) {
-        Map<String, String> argumentsCopy = new HashMap<>(this.arguments);
+    protected Map<String, Object> withArgument(String key, Object value) {
+        Map<String, Object> argumentsCopy = new HashMap<>(this.arguments);
         argumentsCopy.put(key, value);
         return argumentsCopy;
     }
 
-    public Map<String, String> getArguments() {
+    public Map<String, Object> getArguments() {
         return new HashMap<>(this.arguments);
     }
 

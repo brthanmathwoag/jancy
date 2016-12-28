@@ -9,47 +9,43 @@ public class Handler extends Tasklike {
         super(name);
     }
 
-    private Handler(Map<String, String> arguments, Optional<Action> action) {
+    private Handler(Map<String, Object> arguments, Optional<Action> action) {
         super(arguments, action);
     }
 
     public Handler action(Action action) {
         return new Handler(this.arguments, Optional.of(action));
     }
-
-    public Handler notify(String value) {
-        return new Handler(withArgument("notify", value), this.action);
-    }
-
+    
     public Handler when(String value) {
         return new Handler(withArgument("when", value), this.action);
     }
 
-    public Handler withItems(String value) {
-        return new Handler(withArgument("with_items", value), this.action);
+    public Handler withItems(Object... values) {
+        return new Handler(withArgument("with_items", values), this.action);
     }
 
-    public Handler withNested(String value) {
+    public Handler withNested(Object... value) {
         return new Handler(withArgument("with_nested", value), this.action);
     }
 
-    public Handler withDict(String value) {
+    public Handler withDict(Object... value) {
         return new Handler(withArgument("with_dict", value), this.action);
     }
 
-    public Handler withFile(String value) {
+    public Handler withFile(Object... value) {
         return new Handler(withArgument("with_file", value), this.action);
     }
 
-    public Handler withFileglob(String value) {
+    public Handler withFileglob(Object... value) {
         return new Handler(withArgument("with_fileglob", value), this.action);
     }
 
-    public Handler withTogether(String value) {
+    public Handler withTogether(Object... value) {
         return new Handler(withArgument("with_together", value), this.action);
     }
 
-    public Handler withSubelements(String value) {
+    public Handler withSubelements(Object... value) {
         return new Handler(withArgument("with_subelements", value), this.action);
     }
 
@@ -57,7 +53,7 @@ public class Handler extends Tasklike {
         return new Handler(withArgument("with_sequence", value), this.action);
     }
 
-    public Handler withRandomChoice(String value) {
+    public Handler withRandomChoice(Object... value) {
         return new Handler(withArgument("with_random_choice", value), this.action);
     }
 
@@ -73,7 +69,7 @@ public class Handler extends Tasklike {
         return new Handler(withArgument("delay", value), this.action);
     }
 
-    public Handler withFirstFound(String value) {
+    public Handler withFirstFound(Object... value) {
         return new Handler(withArgument("with_first_found", value), this.action);
     }
 
@@ -81,7 +77,7 @@ public class Handler extends Tasklike {
         return new Handler(withArgument("with_lines", value), this.action);
     }
 
-    public Handler withIndexedItems(String value) {
+    public Handler withIndexedItems(Object... value) {
         return new Handler(withArgument("with_indexed_items", value), this.action);
     }
 
@@ -89,11 +85,11 @@ public class Handler extends Tasklike {
         return new Handler(withArgument("with_ini", value), this.action);
     }
 
-    public Handler withFlattened(String value) {
+    public Handler withFlattened(Object... value) {
         return new Handler(withArgument("with_flattened", value), this.action);
     }
 
-    public Handler withInventoryHostnames(String value) {
+    public Handler withInventoryHostnames(Object... value) {
         return new Handler(withArgument("with_inventory_hostnames", value), this.action);
     }
 

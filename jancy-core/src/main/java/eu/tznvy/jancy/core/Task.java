@@ -10,7 +10,7 @@ public class Task extends Tasklike {
         super(name);
     }
 
-    private Task(Map<String, String> arguments, Optional<Action> action) {
+    private Task(Map<String, Object> arguments, Optional<Action> action) {
         super(arguments, action);
     }
 
@@ -18,7 +18,7 @@ public class Task extends Tasklike {
         return new Task(this.arguments, Optional.of(action));
     }
 
-    public Task notify(String value) {
+    public Task notify(Object... value) {
         return new Task(withArgument("notify", value), this.action);
     }
 
@@ -26,31 +26,31 @@ public class Task extends Tasklike {
         return new Task(withArgument("when", value), this.action);
     }
 
-    public Task withItems(String value) {
-        return new Task(withArgument("with_items", value), this.action);
+    public Task withItems(Object... values) {
+        return new Task(withArgument("with_items", values), this.action);
     }
 
-    public Task withNested(String value) {
+    public Task withNested(Object... value) {
         return new Task(withArgument("with_nested", value), this.action);
     }
 
-    public Task withDict(String value) {
+    public Task withDict(Object... value) {
         return new Task(withArgument("with_dict", value), this.action);
     }
 
-    public Task withFile(String value) {
+    public Task withFile(Object... value) {
         return new Task(withArgument("with_file", value), this.action);
     }
 
-    public Task withFileglob(String value) {
+    public Task withFileglob(Object... value) {
         return new Task(withArgument("with_fileglob", value), this.action);
     }
 
-    public Task withTogether(String value) {
+    public Task withTogether(Object... value) {
         return new Task(withArgument("with_together", value), this.action);
     }
 
-    public Task withSubelements(String value) {
+    public Task withSubelements(Object... value) {
         return new Task(withArgument("with_subelements", value), this.action);
     }
 
@@ -58,7 +58,7 @@ public class Task extends Tasklike {
         return new Task(withArgument("with_sequence", value), this.action);
     }
 
-    public Task withRandomChoice(String value) {
+    public Task withRandomChoice(Object... value) {
         return new Task(withArgument("with_random_choice", value), this.action);
     }
 
@@ -74,7 +74,7 @@ public class Task extends Tasklike {
         return new Task(withArgument("delay", value), this.action);
     }
 
-    public Task withFirstFound(String value) {
+    public Task withFirstFound(Object... value) {
         return new Task(withArgument("with_first_found", value), this.action);
     }
 
@@ -82,7 +82,7 @@ public class Task extends Tasklike {
         return new Task(withArgument("with_lines", value), this.action);
     }
 
-    public Task withIndexedItems(String value) {
+    public Task withIndexedItems(Object... value) {
         return new Task(withArgument("with_indexed_items", value), this.action);
     }
 
@@ -90,11 +90,11 @@ public class Task extends Tasklike {
         return new Task(withArgument("with_ini", value), this.action);
     }
 
-    public Task withFlattened(String value) {
+    public Task withFlattened(Object... value) {
         return new Task(withArgument("with_flattened", value), this.action);
     }
 
-    public Task withInventoryHostnames(String value) {
+    public Task withInventoryHostnames(Object... value) {
         return new Task(withArgument("with_inventory_hostnames", value), this.action);
     }
 

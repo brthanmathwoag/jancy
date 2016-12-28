@@ -1,9 +1,10 @@
 package eu.tznvy.jancy.transpiler.rendering
 
 import eu.tznvy.jancy.core.Tasklike
+import eu.tznvy.jancy.transpiler.helpers.ArraysHelper
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable.LinkedHashMap
+import scala.collection.mutable
 
 object TasklikeRenderer {
 
@@ -14,11 +15,10 @@ object TasklikeRenderer {
   def render(tasklikes: Seq[Tasklike]): String =
     YamlContext.get.dump(tasklikes.map(buildModel(_).asJava).toArray)
 
-  def buildModel(tasklike: Tasklike): LinkedHashMap[String, Any] = {
+  def buildModel(tasklike: Tasklike): mutable.LinkedHashMap[String, Any] = {
     val taskArguments = tasklike.getArguments.asScala.toMap
     //TODO: can throw in the future
     val name = taskArguments("name")
-    val otherArguments = taskArguments - "name"
 
     //TODO: can throw
     val moduleName = tasklike.getAction.get.getModuleName
@@ -35,11 +35,16 @@ object TasklikeRenderer {
         .map({ case (k, v) => s"$k='$v'" })
         .mkString("\n")
 
+    val otherArguments = (taskArguments - "name")
+      .map({case (k, v) => (k, ArraysHelper.flattenAPotentialArray(v))})
+      .toList
+      .sortBy(_._1)
+
     val orderedPairs = Seq(
       "name" -> name,
       moduleName -> actionArgumentsString
-    ) ++ otherArguments.toList.sorted
+    ) ++ otherArguments
 
-    LinkedHashMap[String, Any](orderedPairs: _*)
+    mutable.LinkedHashMap[String, Any](orderedPairs: _*)
   }
 }
