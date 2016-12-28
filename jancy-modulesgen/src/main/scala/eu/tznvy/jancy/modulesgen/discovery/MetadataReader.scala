@@ -56,7 +56,7 @@ object MetadataReader {
   }
 
   private def isDocumentationStart(line: String): Boolean =
-    Pattern.matches("^DOCUMENTATION\\s*=\\s*u?['\"]{3}.*", line)
+    Pattern.matches("^DOCUMENTATION\\s*=\\s*[ur]?['\"]{3}.*", line)
 
   private def isDocumentationEnd(line: String): Boolean =
     Pattern.matches("^['\"]{3}.*", line)

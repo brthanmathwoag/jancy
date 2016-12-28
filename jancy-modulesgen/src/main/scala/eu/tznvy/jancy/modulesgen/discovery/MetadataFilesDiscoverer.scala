@@ -32,6 +32,12 @@ object MetadataFilesDiscoverer {
         .opt
         .getOrElse(false)
 
-    hasPythonExtension && containsModuleDefinition
+    def containsVirtualModuleHeader =
+      managed(Source.fromFile(file))
+        .map(_.getLines.exists(_.startsWith("# this is a virtual module that is entirely implemented server side")))
+        .opt
+        .getOrElse(false)
+
+    hasPythonExtension && (containsModuleDefinition || containsVirtualModuleHeader)
   }
 }
