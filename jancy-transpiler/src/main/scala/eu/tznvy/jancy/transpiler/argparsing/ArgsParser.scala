@@ -48,7 +48,7 @@ object ArgsParser {
         println()
         val formatter = new HelpFormatter()
         //TODO: get filename from the filename
-        formatter.printHelp("jancy-transpiler", options)
+        formatter.printHelp("jancy", options)
         None
       }
     }

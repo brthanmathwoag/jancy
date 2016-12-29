@@ -139,7 +139,7 @@ lazy val jancyTranspiler = project
     ),
     name := "jancy-transpiler",
     assemblyOption in assembly := (assemblyOption in assembly).value.copy(prependShellScript = Some(sbtassembly.AssemblyPlugin.defaultShellScript)),
-    assemblyJarName in assembly := s"${name.value}"
+    assemblyJarName in assembly := "jancy"
   )
 
 TaskKey[Unit]("buildAll", "Build all artifacts") := {
