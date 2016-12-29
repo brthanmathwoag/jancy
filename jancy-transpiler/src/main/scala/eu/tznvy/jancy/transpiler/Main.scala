@@ -17,6 +17,8 @@ object Main {
           val outputPath = Paths.get(programArgs.output.getPath, configuration.getName)
           ConfigurationRenderer.render(configuration, outputPath)
         })
-    })
+
+      true
+    }).getOrElse(System.exit(1))
   }
 }
