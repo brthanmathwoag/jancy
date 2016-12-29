@@ -9,19 +9,19 @@ import resource.managed
 
 object ContentFilesExtractor {
 
-  def extract(files: Seq[ContentFile], jar: File, root: Path): Unit = {
+  def extract(files: Seq[ContentFile], jar: File, root: Path): Seq[Path] = {
 
     managed(new ZipFile(jar.getPath))
       .map({ z =>
-        files.foreach({ f =>
+        files.flatMap({ f =>
           managed(z.getInputStream(z.getEntry(f.source)))
             .map({ in =>
               val outputPath = root.resolve(f.destination)
-              println(outputPath)
               outputPath.toFile.getParentFile.mkdirs()
               Files.copy(in, outputPath)
-            }).opt.get
+              outputPath
+            }).opt.map(Seq(_)).getOrElse(Seq())
         })
-      }).opt.get
+    }).opt.getOrElse(Seq())
   }
 }
