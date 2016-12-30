@@ -21,7 +21,7 @@ object PlaybookRenderer {
 
     val orderedPairs = "name" -> playbook.getName :: List[(String, Any)](
         "hosts" -> ArraysHelper.flattenAnArray(playbook.getHosts),
-        "roles" -> ArraysHelper.flattenAnArray(playbook.getRoles),
+        "roles" -> playbook.getRoles,
         "tasks" -> playbook.getTasks.map(TasklikeRenderer.buildModel(_).asJava),
         "handlers" -> playbook.getHandlers.map(TasklikeRenderer.buildModel(_).asJava))
       .filter((p) => !ArraysHelper.isAnEmptyArray(p._2))

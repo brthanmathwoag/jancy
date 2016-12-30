@@ -136,22 +136,37 @@ class PlaybookRendererSpec extends FunSpec {
       assertResult (expected) { actual }
     }
 
-    it("should render single-element arrays as strings") {
+    it("should render single-element hosts arrays as strings") {
 
       val expected =
         """name: webservers
           |hosts: web-01
-          |roles: web
           |""".stripMargin
 
       val input = new Playbook("webservers")
         .hosts(new Host("web-01"))
+
+      val actual = PlaybookRenderer.render(input)
+
+      assertResult (expected) { actual }
+    }
+
+    it("should render roles as a list regardless of its length") {
+
+      val expected =
+        """name: webservers
+          |roles:
+          |- web
+          |""".stripMargin
+
+      val input = new Playbook("webservers")
         .roles(new Role("web"))
 
       val actual = PlaybookRenderer.render(input)
 
       assertResult (expected) { actual }
     }
+
   }
 }
 
