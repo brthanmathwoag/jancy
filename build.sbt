@@ -147,3 +147,11 @@ TaskKey[Unit]("buildAll", "Build all artifacts") := {
   (packageSrc in Compile in jancyCommon).value
   (assembly in jancyTranspiler).value
 }
+
+lazy val lampSimpleExample = project
+  .in(file("examples/lamp_simple"))
+  .dependsOn(jancyCommon)
+  .settings(commonSettings: _*)
+
+lazy val examples = project
+  .aggregate(lampSimpleExample)
