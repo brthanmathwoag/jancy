@@ -23,17 +23,28 @@ object TasklikeRenderer {
     //TODO: can throw
     val moduleName = tasklike.getAction.get.getModuleName
 
-    val actionArgumentsString =
+    val actionArguments =
       tasklike
         .getAction
         //TODO: can throw
         .get
         .getArguments
         .asScala
+        .toMap
+
+    val freeform = actionArguments.get("free_form")
+
+    val otherActionArgumentsString =
+      (actionArguments - "free_form")
         .toList
         .sorted
         .map({ case (k, v) => s"$k='$v'" })
         .mkString("\n")
+
+    val actionArgumentsString =
+      freeform
+        .map(_ + "\n" + otherActionArgumentsString)
+        .getOrElse(otherActionArgumentsString)
 
     val otherArguments = (taskArguments - "name")
       .map({case (k, v) => (k, ArraysHelper.flattenAPotentialArray(v))})

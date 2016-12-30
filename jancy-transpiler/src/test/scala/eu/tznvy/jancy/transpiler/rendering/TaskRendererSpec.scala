@@ -1,6 +1,7 @@
 package eu.tznvy.jancy.transpiler.rendering
 
 import eu.tznvy.jancy.core.Task
+import eu.tznvy.jancy.modules.commands.Command
 import eu.tznvy.jancy.modules.files.Copy
 import eu.tznvy.jancy.modules.packaging.os.Apt
 import eu.tznvy.jancy.modules.system.{Ufw, User}
@@ -151,6 +152,27 @@ class TaskRendererSpec extends FunSpec {
           Map("name" -> "testuser1", "groups" -> "wheel").asJava,
           Map("name" -> "testuser2", "groups" -> "root").asJava
         )
+
+      val actual = TasklikeRenderer.render(task)
+
+      assertResult (expected) { actual }
+    }
+
+    it("should render free-form argument without the key, as the first argument") {
+
+      val expected =
+        """name: Test to see if selinux is running
+          |command: |-
+          |  getenforce
+          |  chdir='/'
+          |register: sestatus
+          |""".stripMargin
+
+      val task = new Task("Test to see if selinux is running")
+        .action(new Command()
+          .freeForm("getenforce")
+          .chdir("/"))
+        .register("sestatus")
 
       val actual = TasklikeRenderer.render(task)
 
