@@ -3,8 +3,8 @@
 jancy is a framework for authoring [Ansible](https://www.ansible.com/) playbooks in Java (or any other language
 targeting JVM).
 
-[![build status](https://jancy.tznvy.eu/content/buildstatus.svg)](https://ravis-ci.org/brthanmathwoag/jancy)
-[![tests status](https://jancy.tznvy.eu/content/testsstatus.svg)](https://ravis-ci.org/brthanmathwoag/jancy)
+[![build status](https://jancy.tznvy.eu/content/buildstatus.svg)](https://travis-ci.org/brthanmathwoag/jancy)
+[![tests status](https://jancy.tznvy.eu/content/testsstatus.svg)](https://travis-ci.org/brthanmathwoag/jancy)
 
 ## Getting jancy
 
