@@ -139,7 +139,7 @@ object MetadataReader {
 
   private def resolveDescription(node: Any): Option[String] =
     node match {
-      case multiline: java.util.List[String] => Some(multiline.asScala.toList.mkString("\n"))
+      case multiline: java.util.List[_] => Some(multiline.asScala.toList.mkString("\n"))
       case oneline: String => Some(oneline)
       case _ => None
     }
