@@ -1,8 +1,3 @@
-def getFilesRecursively(f: File): List[File] = {
-  val subitems = f.listFiles.toList
-  subitems ++ subitems.filter(_.isDirectory).flatMap(getFilesRecursively)
-}
-
 lazy val commonSettings = Seq(
   organization := "eu.tznvy",
   version := "0.1.0-SNAPSHOT",
@@ -52,7 +47,7 @@ lazy val generateSourcesSettings =
     streams.value.log.info("Testing if jancy-modules should be regenerated")
 
     def getLastModificationDate(f: File): Long =
-      if (f.exists) maxOrZero(getFilesRecursively(f).map(_.lastModified))
+      if (f.exists) maxOrZero(Helpers.getFilesRecursively(f).map(_.lastModified))
       else 0
 
     def maxOrZero(xs: Seq[Long]) = if (xs.isEmpty) 0.toLong else xs.max
@@ -72,7 +67,7 @@ lazy val generateSourcesSettings =
         .getMethod("main", Array[String]().getClass)
         .invoke(null, Array[String]())
 
-      getFilesRecursively(file("jancy-modules/src")).filter(_.getName.endsWith(".java")).map(_.getAbsoluteFile)
+      Helpers.getFilesRecursively(file("jancy-modules/src")).filter(_.getName.endsWith(".java")).map(_.getAbsoluteFile)
     } else Seq[java.io.File]()
   }
 
@@ -102,7 +97,7 @@ lazy val jancyCommon = project
       Seq("jancy-core", "jancy-modules")
         .map(_ + "/target/scala-2.12/classes")
         .flatMap({ p =>
-          getFilesRecursively(file(p))
+          Helpers.getFilesRecursively(file(p))
             .filter(_.getName.endsWith(".class"))
             .map({ f =>
               val output = f.getPath.substring(p.length + 1)
@@ -114,7 +109,7 @@ lazy val jancyCommon = project
       Seq("jancy-core", "jancy-modules")
         .map(_ + "/src/main/java")
         .flatMap({ p =>
-          getFilesRecursively(file(p))
+          Helpers.getFilesRecursively(file(p))
             .filter(_.getName.endsWith(".java"))
             .map({ f =>
               val output = f.getPath.substring(p.length + 1)
