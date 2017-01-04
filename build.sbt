@@ -14,17 +14,6 @@ lazy val jancyCore = project
 
 lazy val submodules = TaskKey[Unit]("submodules", "Initialize submodules")
 
-lazy val submodulesSettings =
-  submodules := {
-    streams.value.log.info("Testing if submodules should be initialized")
-    val submodulesFiles = file("submodules").listFiles
-    if (submodulesFiles == null || submodulesFiles.isEmpty || submodulesFiles.exists(_.listFiles.isEmpty)) {
-      streams.value.log.info("Empty dir found, initializing submodules ...")
-      Seq("git", "submodule", "init").!
-      Seq("git", "submodule", "update").!
-    }
-  }
-
 lazy val jancyModulesGen = project
   .in(file("jancy-modulesgen"))
   .dependsOn(jancyCore)
@@ -36,48 +25,20 @@ lazy val jancyModulesGen = project
       Dependencies.handlebars,
       Dependencies.scalaArm
     ),
-    submodulesSettings,
+    submodules := Tasks.initializeSubmodules(streams.value.log),
     compile in Compile := (compile in Compile).dependsOn(submodules).value
   )
-
-lazy val generateSources = TaskKey[Seq[java.io.File]]("generateSources", "Generate sources")
-
-lazy val generateSourcesSettings =
-  generateSources := {
-    streams.value.log.info("Testing if jancy-modules should be regenerated")
-
-    def getLastModificationDate(f: File): Long =
-      if (f.exists) maxOrZero(Helpers.getFilesRecursively(f).map(_.lastModified))
-      else 0
-
-    def maxOrZero(xs: Seq[Long]) = if (xs.isEmpty) 0.toLong else xs.max
-
-    val modulesGenLastModified = getLastModificationDate(file("jancy-modulesgen/src"))
-    val modulesLastModified = getLastModificationDate(file("jancy-modules/src"))
-    val submodulesLastModified = getLastModificationDate(file("submodules"))
-
-    if (modulesGenLastModified >= modulesLastModified || submodulesLastModified > modulesLastModified) {
-      streams.value.log.info("jancy-modulesgen changed, regenerating jancy-modules sources ...")
-
-      Seq("rm", "-rf", "jancy-modules/src/*").!
-
-      (testLoader in Test in jancyModulesGen)
-        .value
-        .loadClass("eu.tznvy.jancy.modulesgen.Main")
-        .getMethod("main", Array[String]().getClass)
-        .invoke(null, Array[String]())
-
-      Helpers.getFilesRecursively(file("jancy-modules/src")).filter(_.getName.endsWith(".java")).map(_.getAbsoluteFile)
-    } else Seq[java.io.File]()
-  }
 
 lazy val jancyModules = project
   .in(file("jancy-modules"))
   .dependsOn(jancyCore)
   .settings(commonSettings: _*)
   .settings(
-    generateSourcesSettings,
-    sourceGenerators in Compile += generateSources.taskValue,
+    sourceGenerators in Compile += Def.task {
+      Tasks.generateSources(
+        streams.value.log,
+        (testLoader in Test in jancyModulesGen).value)
+    }.taskValue,
     cleanFiles += file("jancy-modules/src")
   )
 
