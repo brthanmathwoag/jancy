@@ -50,12 +50,17 @@ lazy val jancyModules = project
 
 lazy val jancyCommon = project
   .in(file("jancy-common"))
-  .dependsOn(jancyModules, jancyCore)
+  .dependsOn(
+    jancyModules % "provided",
+    jancyCore % "provided"
+  )
   .settings(commonSettings: _*)
   .settings(
     name := "jancy-common",
     crossPaths := false,
     autoScalaLibrary := false,
+    publishArtifact in (Compile, packageDoc) := false,
+    publishArtifact in (Test, packageDoc) := false,
     mappings in (Compile, packageBin) ++= {
       Seq("jancy-core", "jancy-modules")
         .map(_ + "/target/classes")
