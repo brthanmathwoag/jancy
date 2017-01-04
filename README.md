@@ -8,11 +8,38 @@ targeting JVM).
 
 ## Getting jancy
 
-You can download the current development version here:
+jancy is currently in development and no stable version has been released yet. Feel free to try out the current snapshot.
 
-* [jancy-common-0.1.0-SNAPSHOT.jar](https://jancy.tznvy.eu/current_build/jancy-common-0.1.0-SNAPSHOT.jar)
-* [jancy-common-0.1.0-SNAPSHOT-sources.jar](https://jancy.tznvy.eu/current_build/jancy-common-0.1.0-SNAPSHOT-sources.jar)
-* [jancy](https://jancy.tznvy.eu/current_build/jancy)
+* [jancy executable](https://jancy.tznvy.eu/current_build/jancy)
+
+### Maven
+
+```xml
+<project>
+    <repositories>
+        <repository>
+            <id>jancy-snapshots</id>
+            <name>jancy snapshots</name>
+            <url>https://jancy.tznvy.eu/m2</url>
+        </repository>
+    </repositories>
+    
+    <dependencies>
+        <dependency>
+            <groupId>eu.tznvy</groupId>
+            <artifactId>jancy-common</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+</project>
+```
+
+### sbt
+
+```scala
+resolvers += "jancy snapshots" at "https://jancy.tznvy.eu/m2"
+libraryDependencies += "eu.tznvy" % "jancy-common" % "0.1.0-SNAPSHOT"
+```
 
 ## Usage
 
