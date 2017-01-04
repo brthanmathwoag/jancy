@@ -23,7 +23,7 @@ object ConfigurationFactoriesDiscoverer {
         .filter(_.endsWith(".class"))
         .map(_.replace(".class", "").replace('/', '.'))
         .map(classLoader.loadClass)
-        .filter(_.getInterfaces.exists(_.getName == "eu.tznvy.jancy.core.ConfigurationFactory"))
+        .filter(_.getInterfaces.exists(_.getName == classOf[ConfigurationFactory].getName))
         .map(_.newInstance.asInstanceOf[ConfigurationFactory])
         .toList)
       .opt
