@@ -2,15 +2,17 @@ lazy val commonSettings = Seq(
   organization := "eu.tznvy",
   version := "0.1.0-SNAPSHOT",
   scalaVersion := "2.12.0",
-  libraryDependencies ++= Seq(
-    Dependencies.scalatest
-  ),
   test in assembly := {}
 )
 
 lazy val jancyCore = project
   .in(file("jancy-core"))
   .settings(commonSettings: _*)
+  .settings(
+    name := "jancy-core",
+    crossPaths := false,
+    autoScalaLibrary := false
+  )
 
 lazy val submodules = TaskKey[Unit]("submodules", "Initialize submodules")
 
@@ -23,7 +25,8 @@ lazy val jancyModulesGen = project
     libraryDependencies ++= Seq(
       Dependencies.snakeyaml,
       Dependencies.handlebars,
-      Dependencies.scalaArm
+      Dependencies.scalaArm,
+      Dependencies.scalatest
     ),
     submodules := Tasks.initializeSubmodules(streams.value.log),
     compile in Compile := (compile in Compile).dependsOn(submodules).value
@@ -34,6 +37,9 @@ lazy val jancyModules = project
   .dependsOn(jancyCore)
   .settings(commonSettings: _*)
   .settings(
+    name := "jancy-modules",
+    crossPaths := false,
+    autoScalaLibrary := false,
     sourceGenerators in Compile += Def.task {
       Tasks.generateSources(
         streams.value.log,
@@ -48,15 +54,11 @@ lazy val jancyCommon = project
   .settings(commonSettings: _*)
   .settings(
     name := "jancy-common",
-    artifactName in (Compile, packageBin) := { (scalaVersion: ScalaVersion, module: ModuleID, artifact: Artifact) =>
-      artifact.name + "-" + module.revision + "." + artifact.extension
-    },
-   artifactName in (Compile, packageSrc) := { (scalaVersion: ScalaVersion, module: ModuleID, artifact: Artifact) =>
-      artifact.name + "-" + module.revision + "-sources." + artifact.extension
-    },
+    crossPaths := false,
+    autoScalaLibrary := false,
     mappings in (Compile, packageBin) ++= {
       Seq("jancy-core", "jancy-modules")
-        .map(_ + "/target/scala-2.12/classes")
+        .map(_ + "/target/classes")
         .flatMap({ p =>
           Helpers.getFilesRecursively(file(p))
             .filter(_.getName.endsWith(".class"))
@@ -88,7 +90,8 @@ lazy val jancyTranspiler = project
     libraryDependencies ++= Seq(
       Dependencies.snakeyaml,
       Dependencies.scalaArm,
-      Dependencies.commonsCli
+      Dependencies.commonsCli,
+      Dependencies.scalatest
     ),
     name := "jancy-transpiler",
     assemblyOption in assembly := (assemblyOption in assembly).value.copy(prependShellScript = Some(sbtassembly.AssemblyPlugin.defaultShellScript)),
@@ -105,6 +108,10 @@ lazy val lampSimpleExample = project
   .in(file("examples/lamp_simple"))
   .dependsOn(jancyCommon)
   .settings(commonSettings: _*)
+  .settings(
+    crossPaths := false,
+    autoScalaLibrary := false
+  )
 
 lazy val examples = project
   .aggregate(lampSimpleExample)

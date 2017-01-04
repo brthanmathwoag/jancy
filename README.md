@@ -114,7 +114,7 @@ jancy is built using sbt. You don't need to have it (or Scala) installed beforeh
 
 # generate playbook from the jar
 jancy-transpiler/target/scala-2.12/jancy \
-    --jar examples/lamp_simple/target/scala-2.12/lampSimpleExample*.jar \
+    --jar examples/lamp_simple/target/lampSimpleExample*.jar \
     --output /tmp/
 
 # run the playbook
