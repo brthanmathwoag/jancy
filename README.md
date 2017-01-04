@@ -23,7 +23,7 @@ jancy is currently in development and no stable version has been released yet. F
             <url>https://jancy.tznvy.eu/m2</url>
         </repository>
     </repositories>
-    
+
     <dependencies>
         <dependency>
             <groupId>eu.tznvy</groupId>
