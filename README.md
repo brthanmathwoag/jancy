@@ -44,7 +44,7 @@ public class HelloWorldConfigurationFactory implements ConfigurationFactory {
                 new Inventory("inventory")
                     .hosts(localhost))
             .playbooks(
-                new Playbook("Flight test")
+                new Playbook("Preflight check")
                     .hosts(localhost)
                     .tasks(
                         new Task("Test connection")
