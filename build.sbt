@@ -1,6 +1,3 @@
-val snakeyamlVersion = "1.17"
-val scalaArmVersion = "2.0"
-
 def getFilesRecursively(f: File): List[File] = {
   val subitems = f.listFiles.toList
   subitems ++ subitems.filter(_.isDirectory).flatMap(getFilesRecursively)
@@ -11,7 +8,7 @@ lazy val commonSettings = Seq(
   version := "0.1.0-SNAPSHOT",
   scalaVersion := "2.12.0",
   libraryDependencies ++= Seq(
-    "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+    Dependencies.scalatest
   ),
   test in assembly := {}
 )
@@ -40,9 +37,9 @@ lazy val jancyModulesGen = project
   .settings(
     mainClass in Compile := Some("eu.tznvy.jancy.modulesgen.Main"),
     libraryDependencies ++= Seq(
-      "org.yaml" % "snakeyaml" % snakeyamlVersion,
-      "com.github.jknack" % "handlebars" % "4.0.6",
-      "com.jsuereth" %% "scala-arm" % scalaArmVersion
+      Dependencies.snakeyaml,
+      Dependencies.handlebars,
+      Dependencies.scalaArm
     ),
     submodulesSettings,
     compile in Compile := (compile in Compile).dependsOn(submodules).value
@@ -133,9 +130,9 @@ lazy val jancyTranspiler = project
   .settings(commonSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
-      "org.yaml" % "snakeyaml" % snakeyamlVersion,
-      "com.jsuereth" %% "scala-arm" % scalaArmVersion,
-      "commons-cli" % "commons-cli" % "1.3.1"
+      Dependencies.snakeyaml,
+      Dependencies.scalaArm,
+      Dependencies.commonsCli
     ),
     name := "jancy-transpiler",
     assemblyOption in assembly := (assemblyOption in assembly).value.copy(prependShellScript = Some(sbtassembly.AssemblyPlugin.defaultShellScript)),
