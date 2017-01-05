@@ -1,13 +1,15 @@
 package eu.tznvy.jancy.transpiler.discovery
 
 import java.io.File
-import java.nio.file.{ Files, Path}
+import java.nio.file.Path
 import java.util.zip.ZipFile
+
+import eu.tznvy.jancy.transpiler.helpers.Filesystem
 
 import scala.collection.JavaConverters._
 import resource.managed
 
-object ContentFilesExtractor {
+class ContentFilesExtractor(filesystem: Filesystem) {
 
   def extract(files: Seq[ContentFile], jar: File, root: Path): Seq[Path] = {
 
@@ -17,8 +19,8 @@ object ContentFilesExtractor {
           managed(z.getInputStream(z.getEntry(f.source)))
             .map({ in =>
               val outputPath = root.resolve(f.destination)
-              outputPath.toFile.getParentFile.mkdirs()
-              Files.copy(in, outputPath)
+              filesystem.createDirectories(outputPath.getParent)
+              filesystem.copy(in, outputPath)
               outputPath
             }).opt.map(Seq(_)).getOrElse(Seq())
         })

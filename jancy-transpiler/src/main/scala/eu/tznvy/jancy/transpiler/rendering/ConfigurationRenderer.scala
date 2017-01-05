@@ -1,20 +1,21 @@
 package eu.tznvy.jancy.transpiler.rendering
 
-import java.nio.file.{FileSystems, Files, Path}
+import java.nio.file.Path
 import java.util
 
 import scala.collection.JavaConverters._
 import eu.tznvy.jancy.core.{Configuration, Inventory, Playbook, Role}
+import eu.tznvy.jancy.transpiler.helpers.Filesystem
 
-object ConfigurationRenderer {
+class ConfigurationRenderer(filesystem: Filesystem) {
 
   def render(configuration: Configuration, root: Path): Unit = {
-    root.toFile.mkdirs()
+    filesystem.createDirectories(root)
 
     configuration
       .getInventories
       .map({ i => (makeInventoryPath(root, i), InventoryRenderer.render(i)) })
-      .foreach({ case (p, c) => Files.write(p, c.getBytes) })
+      .foreach({ case (p, c) => filesystem.writeFile(p, c) })
 
     saveVars(
       root.resolve("host_vars"),
@@ -36,12 +37,14 @@ object ConfigurationRenderer {
         .getInventories
         .map({ i => ("all", i.getVars )}))
 
-    Files.write(
+    filesystem.writeFile(
       makeMainPlaybookPath(root),
-      PlaybookRenderer.render(configuration.getPlaybooks).getBytes)
+      PlaybookRenderer.render(configuration.getPlaybooks))
+
+    val roleRenderer = new RoleRenderer(filesystem)
 
     configuration.getRoles
-        .foreach({ r => RoleRenderer.render(r, makeRolePath(root, r)) })
+        .foreach({ r => roleRenderer.render(r, makeRolePath(root, r)) })
   }
 
   private def makeInventoryPath(root: Path, inventory: Inventory): Path =
@@ -54,10 +57,10 @@ object ConfigurationRenderer {
     root.resolve(playbook.getName + ".yml")
 
   private def makeRolePath(root: Path, role: Role): Path =
-    root.resolve("roles" + FileSystems.getDefault.getSeparator + role.getName)
+    root.resolve("roles").resolve(role.getName)
 
   private def saveVars(rootPath: Path, vars: Array[(String, util.Map[String, AnyRef])]): Unit = {
-    rootPath.toFile.mkdirs()
+    filesystem.createDirectories(rootPath)
 
     vars
       .groupBy({ p => p._1 })
@@ -68,6 +71,6 @@ object ConfigurationRenderer {
         val path = rootPath.resolve(g._1)
         (path, content)
       })
-      .foreach({ case (p, c) => Files.write(p, c.getBytes) })
+      .foreach({ case (p, c) => filesystem.writeFile(p, c) })
   }
 }

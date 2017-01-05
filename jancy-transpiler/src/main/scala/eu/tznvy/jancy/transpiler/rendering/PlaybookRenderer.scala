@@ -17,8 +17,6 @@ object PlaybookRenderer {
   }
 
   private def buildModel(playbook: Playbook): mutable.LinkedHashMap[String, Any] = {
-
-
     val orderedPairs = "name" -> playbook.getName :: List[(String, Any)](
         "hosts" -> ArraysHelper.flattenAnArray(playbook.getHosts),
         "roles" -> playbook.getRoles,
