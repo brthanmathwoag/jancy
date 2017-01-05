@@ -51,8 +51,8 @@ lazy val jancyModules = project
 lazy val jancyCommon = project
   .in(file("jancy-common"))
   .dependsOn(
-    jancyModules % "provided",
-    jancyCore % "provided"
+    jancyModules,
+    jancyCore
   )
   .settings(commonSettings: _*)
   .settings(
@@ -84,7 +84,8 @@ lazy val jancyCommon = project
               (f, output)
             })
         })
-    }
+    },
+    pomPostProcess := Helpers.dropIfDependency
   )
 
 lazy val jancyTranspiler = project
