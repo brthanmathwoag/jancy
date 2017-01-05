@@ -4,6 +4,7 @@ import java.io.InputStream
 import java.nio.file.{Files, Path}
 
 import scala.collection.JavaConverters._
+import scala.util.Try
 
 class ConcreteFilesystem extends Filesystem {
   override def createDirectories(path: Path): Unit =
@@ -12,8 +13,10 @@ class ConcreteFilesystem extends Filesystem {
   override def writeFile(path: Path, content: String): Unit =
     Files.write(path, content.getBytes)
 
-  override def readFile(path: Path): String =
-    Files.readAllLines(path).asScala.mkString("\n")
+  override def readFile(path: Path): Option[String] =
+    Try { Files.readAllLines(path) }
+      .map(_.asScala.mkString("\n"))
+      .toOption
 
   override def testPath(path: Path): Boolean =
     Files.exists(path)

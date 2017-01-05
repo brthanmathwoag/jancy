@@ -8,7 +8,7 @@ trait Filesystem {
 
   def writeFile(path: Path, content: String): Unit
 
-  def readFile(path: Path): String
+  def readFile(path: Path): Option[String]
 
   def testPath(path: Path): Boolean
 

@@ -22,7 +22,7 @@ class RoleRenderer(filesystem: Filesystem) {
     root.resolve(componentName).resolve("main.yml")
 
   private def writeToFile(path: Path, content: String): Unit = {
-    path.toFile.getParentFile.mkdirs
+    filesystem.createDirectories(path.getParent)
     filesystem.writeFile(path, content)
   }
 }
