@@ -12,16 +12,16 @@ class InMemoryFilesystem extends Filesystem {
   private val files = mutable.Map[String, String]()
 
   override def createDirectories(path: Path): Unit =
-    files += path.toFile.getName -> ""
+    files += path.toFile.getPath -> ""
 
   override def writeFile(path: Path, content: String): Unit =
-    files += path.toFile.getName -> content
+    files += path.toFile.getPath -> content
 
   override def readFile(path: Path): Option[String] =
-    files.get(path.toFile.getName)
+    files.get(path.toFile.getPath)
 
   override def testPath(path: Path): Boolean =
-    files.contains(path.toFile.getName)
+    files.contains(path.toFile.getPath)
 
   override def copy(from: InputStream, to: Path): Unit = ???
 }

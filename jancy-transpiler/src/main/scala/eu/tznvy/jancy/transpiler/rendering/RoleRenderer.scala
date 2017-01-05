@@ -3,7 +3,7 @@ package eu.tznvy.jancy.transpiler.rendering
 import java.nio.file.Path
 
 import scala.collection.JavaConverters._
-import eu.tznvy.jancy.core.Role
+import eu.tznvy.jancy.core.{Handler, Role, Task}
 import eu.tznvy.jancy.transpiler.helpers.Filesystem
 
 
@@ -11,18 +11,23 @@ class RoleRenderer(filesystem: Filesystem) {
 
   def render(role: Role, root: Path): Unit = {
 
-    Seq(
-      ("tasks", { () => TasklikeRenderer.render(role.getTasks) }),
-      ("handlers", { () => TasklikeRenderer.render(role.getHandlers) }),
-      ("vars", { () => VarsRenderer.render(role.getVars.asScala.toMap) }))
-      .foreach({ case (k, v) => writeToFile(constructOutputFilePath(root, k), v()) })
-  }
+    case class Rendering[T](directoryName: String,  items: Array[T], renderer: Renderer[T]) {
+      def apply(): Unit = {
+        val outputPath = root
+          .resolve(role.getName)
+          .resolve(directoryName)
+          .resolve("main.yml")
 
-  private def constructOutputFilePath(root: Path, componentName: String) =
-    root.resolve(componentName).resolve("main.yml")
+        if (!items.isEmpty) {
+          filesystem.writeFile(outputPath, renderer.renderAll(items))
+        }
+      }
+    }
 
-  private def writeToFile(path: Path, content: String): Unit = {
-    filesystem.createDirectories(path.getParent)
-    filesystem.writeFile(path, content)
+    Seq[Rendering[_]](
+      Rendering("tasks", role.getTasks, new TaskRenderer()),
+      Rendering("handlers", role.getHandlers, new HandlerRenderer()),
+      Rendering("vars", role.getVars.asScala.toArray[(String, Any)], VarsRenderer)
+    ).foreach(_())
   }
 }

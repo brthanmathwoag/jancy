@@ -10,8 +10,11 @@ class ConcreteFilesystem extends Filesystem {
   override def createDirectories(path: Path): Unit =
     Files.createDirectories(path)
 
-  override def writeFile(path: Path, content: String): Unit =
+  override def writeFile(path: Path, content: String): Unit = {
+    Files.createDirectories(path.getParent)
     Files.write(path, content.getBytes)
+  }
+
 
   override def readFile(path: Path): Option[String] =
     Try { Files.readAllLines(path) }

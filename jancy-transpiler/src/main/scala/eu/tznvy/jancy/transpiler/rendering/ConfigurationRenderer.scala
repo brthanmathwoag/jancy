@@ -39,7 +39,7 @@ class ConfigurationRenderer(filesystem: Filesystem) {
 
     filesystem.writeFile(
       makeMainPlaybookPath(root),
-      PlaybookRenderer.render(configuration.getPlaybooks))
+      PlaybookRenderer.renderAll(configuration.getPlaybooks))
 
     val roleRenderer = new RoleRenderer(filesystem)
 
@@ -67,7 +67,7 @@ class ConfigurationRenderer(filesystem: Filesystem) {
       .map({ g =>
         val pairs = g._2
           .flatMap({ p => p._2.asScala.toSeq }).toMap
-        val content = VarsRenderer.render(pairs)
+        val content = VarsRenderer.renderAll(pairs.toArray)
         val path = rootPath.resolve(g._1)
         (path, content)
       })

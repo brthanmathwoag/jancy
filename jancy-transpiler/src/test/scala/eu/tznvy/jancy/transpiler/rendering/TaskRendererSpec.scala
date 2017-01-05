@@ -28,7 +28,7 @@ class TaskRendererSpec extends FunSpec {
         .dest("/etc/apache2/")
         .toTask("Upload httpd config")
 
-      val actual = TasklikeRenderer.render(task)
+      val actual = new TaskRenderer().render(task)
 
       assertResult (expected) { actual }
     }
@@ -51,7 +51,7 @@ class TaskRendererSpec extends FunSpec {
         .port("22")
         .toTask("Allow ssh through firewall")
 
-      val actual = TasklikeRenderer.render(task)
+      val actual = new TaskRenderer().render(task)
 
       assertResult (expected) { actual }
     }
@@ -76,7 +76,7 @@ class TaskRendererSpec extends FunSpec {
         .register("result")
         .when("ansible_os_family == \"Debian\"")
 
-      val actual = TasklikeRenderer.render(task)
+      val actual = new TaskRenderer().render(task)
 
       assertResult (expected) { actual }
     }
@@ -102,7 +102,7 @@ class TaskRendererSpec extends FunSpec {
           .name("{{ item }}"))
         .withItems("apache2", "subversion", "libapache2-mod-svn", "apache2-utils", "anacron")
 
-      val actual = TasklikeRenderer.render(task)
+      val actual = new TaskRenderer().render(task)
 
       assertResult (expected) { actual }
     }
@@ -123,7 +123,7 @@ class TaskRendererSpec extends FunSpec {
           .name("{{ item }}"))
         .withItems("apache2")
 
-      val actual = TasklikeRenderer.render(task)
+      val actual = new TaskRenderer().render(task)
 
       assertResult (expected) { actual }
     }
@@ -153,7 +153,7 @@ class TaskRendererSpec extends FunSpec {
           Map("name" -> "testuser2", "groups" -> "root").asJava
         )
 
-      val actual = TasklikeRenderer.render(task)
+      val actual = new TaskRenderer().render(task)
 
       assertResult (expected) { actual }
     }
@@ -174,7 +174,7 @@ class TaskRendererSpec extends FunSpec {
           .chdir("/"))
         .register("sestatus")
 
-      val actual = TasklikeRenderer.render(task)
+      val actual = new TaskRenderer().render(task)
 
       assertResult (expected) { actual }
     }

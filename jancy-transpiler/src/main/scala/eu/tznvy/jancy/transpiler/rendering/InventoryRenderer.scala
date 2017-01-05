@@ -2,7 +2,7 @@ package eu.tznvy.jancy.transpiler.rendering
 
 import eu.tznvy.jancy.core.{Host, Inventory, Group}
 
-object InventoryRenderer {
+object InventoryRenderer extends Renderer[Inventory] {
   def render(inventory: Inventory): String = {
     def renderHosts(hosts: Iterable[Host]) = {
       val lines = hosts.map(_.getName).mkString("\n")
@@ -18,4 +18,6 @@ object InventoryRenderer {
 
     (renderHosts(standaloneHosts) + renderGroups(inventory.getGroups)).trim
   }
+
+  override def renderAll(ts: Array[Inventory]) = ???
 }

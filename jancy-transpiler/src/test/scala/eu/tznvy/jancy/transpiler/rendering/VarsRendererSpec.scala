@@ -29,8 +29,9 @@ class VarsRendererSpec extends FunSpec {
         .getVars
         .asScala
         .toMap
+        .toArray[(String, Any)]
 
-      val actual = VarsRenderer.render(vars)
+      val actual = VarsRenderer.renderAll(vars)
 
       assertResult(expected) { actual }
     }

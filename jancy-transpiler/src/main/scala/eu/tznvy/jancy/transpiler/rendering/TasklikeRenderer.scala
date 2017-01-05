@@ -6,16 +6,16 @@ import eu.tznvy.jancy.transpiler.helpers.ArraysHelper
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 
-object TasklikeRenderer {
+class TasklikeRenderer[T <: Tasklike] extends Renderer[T] {
 
-  def render(tasklike: Tasklike): String = {
+  override def render(tasklike: T): String = {
     YamlContext.get.dump(buildModel(tasklike).asJava)
   }
 
-  def render(tasklikes: Seq[Tasklike]): String =
+  override def renderAll(tasklikes: Array[T]): String =
     YamlContext.get.dump(tasklikes.map(buildModel(_).asJava).toArray)
 
-  def buildModel(tasklike: Tasklike): mutable.LinkedHashMap[String, Any] = {
+  def buildModel(tasklike: T): mutable.LinkedHashMap[String, Any] = {
     val taskArguments = tasklike.getArguments.asScala.toMap
     //TODO: can throw in the future
     val name = taskArguments("name")
