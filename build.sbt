@@ -61,30 +61,16 @@ lazy val jancyCommon = project
     autoScalaLibrary := false,
     publishArtifact in (Compile, packageDoc) := false,
     publishArtifact in (Test, packageDoc) := false,
-    mappings in (Compile, packageBin) ++= {
-      Seq("jancy-core", "jancy-modules")
-        .map(_ + "/target/classes")
-        .flatMap({ p =>
-          Helpers.getFilesRecursively(file(p))
-            .filter(_.getName.endsWith(".class"))
-            .map({ f =>
-              val output = f.getPath.substring(p.length + 1)
-              (f, output)
-            })
-        })
-    },
-    mappings in (Compile, packageSrc) ++= {
-      Seq("jancy-core", "jancy-modules")
-        .map(_ + "/src/main/java")
-        .flatMap({ p =>
-          Helpers.getFilesRecursively(file(p))
-            .filter(_.getName.endsWith(".java"))
-            .map({ f =>
-              val output = f.getPath.substring(p.length + 1)
-              (f, output)
-            })
-        })
-    },
+    mappings in (Compile, packageBin) ++=
+      Helpers.pickFilesFromSubpaths(
+        Seq("jancy-core", "jancy-modules"),
+        file("target") / "classes",
+        _.endsWith(".class")),
+    mappings in (Compile, packageSrc) ++=
+      Helpers.pickFilesFromSubpaths(
+        Seq("jancy-core", "jancy-modules"),
+        file("src") / "main" / "java",
+        _.endsWith(".java")),
     pomPostProcess := Helpers.dropIfDependency
   )
 

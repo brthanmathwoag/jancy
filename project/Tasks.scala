@@ -3,7 +3,7 @@ import sbt.Keys._
 
 object Tasks {
 
-  def initializeSubmodules(logger: Logger) = {
+  def initializeSubmodules(logger: Logger): Unit = {
     logger.info("Testing if submodules should be initialized")
 
     val submodulesFiles = file("submodules").listFiles
@@ -18,15 +18,15 @@ object Tasks {
     }
   }
 
-  def generateSources(logger: Logger, classLoader: ClassLoader) = {
+  def generateSources(logger: Logger, classLoader: ClassLoader): Seq[File] = {
     
     logger.info("Testing if jancy-modules should be regenerated")
     
     def getLastModificationDate(f: File): Long =
-      if (f.exists) maxOrZero(Helpers.getFilesRecursively(f).map(_.lastModified))
+      if (f.exists) maxOrZero(Path.allSubpaths(f).map(_._1.lastModified))
       else 0
 
-    def maxOrZero(xs: Seq[Long]) = if (xs.isEmpty) 0.toLong else xs.max
+    def maxOrZero(xs: Traversable[Long]) = if (xs.isEmpty) 0.toLong else xs.max
 
     val modulesGenLastModified = getLastModificationDate(file("jancy-modulesgen/src"))
     val modulesLastModified = getLastModificationDate(file("jancy-modules/src"))
@@ -44,11 +44,11 @@ object Tasks {
         .getMethod("main", Array[String]().getClass)
         .invoke(null, Array[String]())
 
-      Helpers
-        .getFilesRecursively(file("jancy-modules/src"))
-        .filter(_.getName.endsWith(".java"))
-        .map(_.getAbsoluteFile)
-    } else Seq[java.io.File]()
+      Path.allSubpaths(file("jancy-modules") / "src")
+        .filter(_._2.endsWith(".java"))
+        .map(_._1.getAbsoluteFile)
+        .toSeq
+    } else Seq[File]()
   }
 }
 
