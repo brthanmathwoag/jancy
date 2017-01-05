@@ -86,7 +86,11 @@ lazy val jancyTranspiler = project
       Dependencies.scalatest
     ),
     name := "jancy-transpiler",
-    assemblyOption in assembly := (assemblyOption in assembly).value.copy(prependShellScript = Some(sbtassembly.AssemblyPlugin.defaultShellScript)),
+    assemblyOption in assembly :=
+      (assemblyOption in assembly)
+        .value
+        .copy(prependShellScript = Some(
+          sbtassembly.AssemblyPlugin.defaultShellScript)),
     assemblyJarName in assembly := "jancy"
   )
 
