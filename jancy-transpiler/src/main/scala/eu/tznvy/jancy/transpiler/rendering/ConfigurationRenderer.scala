@@ -61,17 +61,18 @@ class ConfigurationRenderer(filesystem: Filesystem) {
     root.resolve("roles").resolve(role.getName)
 
   private def saveVars(rootPath: Path, vars: Array[(String, util.Map[String, AnyRef])]): Unit = {
-    filesystem.createDirectories(rootPath)
-
     vars
       .groupBy({ p => p._1 })
       .map({ g =>
         val pairs = g._2
-          .flatMap({ p => p._2.asScala.toSeq }).toMap
-        val content = VarsRenderer.renderAll(pairs.toArray)
+          .flatMap({ p => p._2.asScala.toSeq })
+          .toArray[(String, Any)]
+        val content = VarsRenderer.renderAll(pairs)
         val path = rootPath.resolve(g._1)
-        (path, content)
+        val isEmpty = pairs.length == 0
+        (path, content, isEmpty)
       })
-      .foreach({ case (p, c) => filesystem.writeFile(p, c) })
+      .filter(!_._3)
+      .foreach({ case (p, c, _) => filesystem.writeFile(p, c) })
   }
 }
