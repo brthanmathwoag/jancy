@@ -17,6 +17,7 @@ class ConfigurationRenderer(filesystem: Filesystem) {
       .map({ i => (makeInventoryPath(root, i), InventoryRenderer.render(i)) })
       .foreach({ case (p, c) => filesystem.writeFile(p, c) })
 
+    //TODO: these should probably be rendered by InventoryRenderer
     saveVars(
       root.resolve("host_vars"),
       configuration
