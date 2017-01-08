@@ -1,5 +1,8 @@
 package eu.tznvy.jancy.transpiler.helpers
 
+/**
+  * Various array transformations and predicates
+  */
 object ArraysHelper {
 
   def flattenAPotentialArray(value: Any): Any =

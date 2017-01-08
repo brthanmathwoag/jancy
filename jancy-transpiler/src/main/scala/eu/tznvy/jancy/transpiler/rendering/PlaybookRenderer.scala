@@ -6,6 +6,9 @@ import eu.tznvy.jancy.transpiler.helpers.ArraysHelper
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 
+/**
+  * Creates YAML representation of Playbooks
+  */
 object PlaybookRenderer extends Renderer[Playbook] {
 
   override def render(playbook: Playbook): String =

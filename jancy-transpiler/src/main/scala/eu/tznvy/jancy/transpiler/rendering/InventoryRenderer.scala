@@ -2,6 +2,9 @@ package eu.tznvy.jancy.transpiler.rendering
 
 import eu.tznvy.jancy.core.{Host, Inventory, Group}
 
+/**
+  * Creates an INI representation for Inventories
+  */
 object InventoryRenderer extends Renderer[Inventory] {
   def render(inventory: Inventory): String = {
     def renderHosts(hosts: Iterable[Host]) = {

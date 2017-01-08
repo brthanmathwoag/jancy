@@ -5,6 +5,9 @@ import java.util.zip.ZipFile
 import resource.managed
 import scala.collection.JavaConverters._
 
+/**
+  * Looks for content files embedded in the jar
+  */
 object ContentFilesDiscoverer {
 
   def discover(file: File, configurationName: String): Seq[ContentFile] = {

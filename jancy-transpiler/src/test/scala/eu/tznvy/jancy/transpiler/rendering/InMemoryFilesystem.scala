@@ -7,7 +7,9 @@ import eu.tznvy.jancy.transpiler.helpers.Filesystem
 
 import scala.collection.mutable
 
-
+/**
+  * A mock Filesystem
+  */
 class InMemoryFilesystem extends Filesystem {
   private val files = mutable.Map[String, String]()
 

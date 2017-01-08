@@ -8,6 +8,10 @@ import resource._
 
 import eu.tznvy.jancy.core.ConfigurationFactory
 
+/**
+  * Finds and instantiates classes implementing the ConfigurationFactory interface
+  * in a specified jar.
+  */
 object ConfigurationFactoriesDiscoverer {
 
   def getConfigurationFactoriesInJar(file: File): Seq[ConfigurationFactory] = {

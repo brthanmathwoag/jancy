@@ -3,12 +3,14 @@ package eu.tznvy.jancy.transpiler.discovery
 import java.io.File
 import java.nio.file.Path
 import java.util.zip.ZipFile
-
 import eu.tznvy.jancy.transpiler.helpers.Filesystem
-
-import scala.collection.JavaConverters._
 import resource.managed
 
+/**
+  * Extracts the content files from the jar
+  *
+  * @param filesystem     a wrapper for IO operations
+  */
 class ContentFilesExtractor(filesystem: Filesystem) {
 
   def extract(files: Seq[ContentFile], jar: File, root: Path): Seq[Path] = {

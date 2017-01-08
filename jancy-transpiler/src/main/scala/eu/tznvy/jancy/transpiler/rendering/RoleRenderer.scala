@@ -3,10 +3,14 @@ package eu.tznvy.jancy.transpiler.rendering
 import java.nio.file.Path
 
 import scala.collection.JavaConverters._
-import eu.tznvy.jancy.core.{Handler, Role, Task}
+import eu.tznvy.jancy.core.Role
 import eu.tznvy.jancy.transpiler.helpers.Filesystem
 
-
+/**
+  * Creates YAML representation for Roles on a provided filesystem
+  *
+  * @param filesystem     a wrapper for IO operations
+  */
 class RoleRenderer(filesystem: Filesystem) {
 
   def render(role: Role, root: Path): Unit = {

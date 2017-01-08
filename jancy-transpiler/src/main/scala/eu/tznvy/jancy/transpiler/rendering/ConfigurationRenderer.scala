@@ -7,6 +7,11 @@ import scala.collection.JavaConverters._
 import eu.tznvy.jancy.core.{Configuration, Inventory, Playbook, Role}
 import eu.tznvy.jancy.transpiler.helpers.Filesystem
 
+/**
+  * Creates YAML representation of Configurations on the provided filesystem
+  *
+  * @param filesystem     a wrapper for IO operations
+  */
 class ConfigurationRenderer(filesystem: Filesystem) {
 
   def render(configuration: Configuration, root: Path): Unit = {

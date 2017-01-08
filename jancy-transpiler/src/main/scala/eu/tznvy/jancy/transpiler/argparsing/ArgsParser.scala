@@ -5,6 +5,11 @@ import scala.util.{Try, Success, Failure}
 
 import org.apache.commons.cli.{Option, Options, DefaultParser, CommandLine, HelpFormatter}
 
+/**
+  * Builds Args from stringly-typed commandline args
+  *
+  * @param executableName     printed in usage help string
+  */
 class ArgsParser(executableName: String) {
   private val defaultOutput = "."
   private val jarArgKey = "j"

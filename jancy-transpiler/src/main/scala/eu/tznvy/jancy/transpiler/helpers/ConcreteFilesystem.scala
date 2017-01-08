@@ -6,6 +6,9 @@ import java.nio.file.{Files, Path}
 import scala.collection.JavaConverters._
 import scala.util.Try
 
+/**
+  * A wrapper for IO operations on an actual filesystem
+  */
 class ConcreteFilesystem extends Filesystem {
   override def createDirectories(path: Path): Unit =
     Files.createDirectories(path)
@@ -14,7 +17,6 @@ class ConcreteFilesystem extends Filesystem {
     Files.createDirectories(path.getParent)
     Files.write(path, content.getBytes)
   }
-
 
   override def readFile(path: Path): Option[String] =
     Try { Files.readAllLines(path) }

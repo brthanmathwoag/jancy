@@ -6,6 +6,11 @@ import eu.tznvy.jancy.transpiler.helpers.ArraysHelper
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 
+/**
+  * Creates YAML representation of Tasklike-based objects
+  *
+  * @tparam T     a sub-class of Tasklike
+  */
 class TasklikeRenderer[T <: Tasklike] extends Renderer[T] {
 
   override def render(tasklike: T): String = {
