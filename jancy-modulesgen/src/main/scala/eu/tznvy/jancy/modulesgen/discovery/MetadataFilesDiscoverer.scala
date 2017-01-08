@@ -6,7 +6,7 @@ import scala.io.Source
 
 import resource._
 
-/***
+/**
   * Picks Ansible module files in a particular path
   */
 object MetadataFilesDiscoverer {
@@ -24,17 +24,25 @@ object MetadataFilesDiscoverer {
   }
 
   private def isModuleFile(file: File): Boolean = {
+    val virtualModuleHeader =
+      "# this is a virtual module that is entirely implemented server side"
+
+    val moduleConstructorInvocation = "module = AnsibleModule("
+
     def hasPythonExtension: Boolean = file.getPath.endsWith(".py")
 
     def containsModuleDefinition: Boolean =
       managed(Source.fromFile(file))
-        .map(_.getLines.exists(_.contains("module = AnsibleModule(")))
+        .map(_.getLines.exists(_.contains(moduleConstructorInvocation)))
         .opt
         .getOrElse(false)
 
     def containsVirtualModuleHeader =
       managed(Source.fromFile(file))
-        .map(_.getLines.exists(_.startsWith("# this is a virtual module that is entirely implemented server side")))
+        .map(_
+            .getLines
+            .exists(_
+              .startsWith(virtualModuleHeader)))
         .opt
         .getOrElse(false)
 
