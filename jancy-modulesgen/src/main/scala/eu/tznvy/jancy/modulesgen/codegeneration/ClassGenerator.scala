@@ -1,70 +1,89 @@
 package eu.tznvy.jancy.modulesgen.codegeneration
 
 import com.github.jknack.handlebars.context.FieldValueResolver
-import com.github.jknack.handlebars.{Template, Context, Handlebars}
+import com.github.jknack.handlebars.{Context, Handlebars, Template}
 import com.github.jknack.handlebars.io.ClassPathTemplateLoader
-import eu.tznvy.jancy.modulesgen.model.ModuleMetadata
+import eu.tznvy.jancy.modulesgen.model.{ModuleMetadata, OptionMetadata}
 
+/**
+  * Generates wrapper source code based on ModuleMetadata via Handlebars
+  */
 object ClassGenerator {
 
   def generateClass(moduleMetadata: ModuleMetadata): String =
     template(createContext(moduleMetadata))
-
-  private def createContext(moduleMetadata: ModuleMetadata) =
-    Context
-      .newBuilder(buildModelForHandlebars(moduleMetadata))
-      //workaround to access properties without javabean getters/setters
-      .resolver(FieldValueResolver.INSTANCE)
-      .build()
 
   private lazy val template: Template =
     new Handlebars(
       new ClassPathTemplateLoader("/templates")
     ).compile("Class")
 
+  private def createContext(moduleMetadata: ModuleMetadata): Context =
+    Context
+      .newBuilder(buildModelForHandlebars(moduleMetadata))
+      //workaround to access properties without javabean getters/setters
+      .resolver(FieldValueResolver.INSTANCE)
+      .build()
+
   private def buildModelForHandlebars(moduleMetadata: ModuleMetadata): HandlebarsModule =
     HandlebarsModule(
       moduleMetadata.className,
       moduleMetadata.originalName,
       moduleMetadata.namespace,
-      //TODO: refactor me
       formatJavadoc(
-        moduleMetadata
-          .description
-          .getOrElse(moduleMetadata
-              .shortDescription
-              .getOrElse(s"This is a wrapper for ${moduleMetadata.originalName} module")),
-        false),
-      moduleMetadata.options.flatMap({ o =>
-
-        val description = formatJavadoc(
-          o.description
-            .getOrElse(s"This is a wrapper for ${o.originalName} parameter"),
-          true)
-
-        val mainOption = HandlebarsOption(
-          o.name,
-          o.originalName,
-          description)
-
-        val aliasOptions = o.aliases.map({ a =>
-          HandlebarsOption(
-            a.name,
-            a.originalName,
-            description)
-        }).toList
-
-        mainOption :: aliasOptions
-      }).groupBy(_.name).map(_._2.head).toArray
+        getHandlebarsModuleDescription(moduleMetadata),
+        isMemberJavadoc = false),
+      moduleMetadata
+        .options
+        .flatMap(buildHandlebarsOptions)
+        .groupBy(_.name)
+        .map(_._2.head)
+        .toArray
     )
+
+  private def buildHandlebarsOptions(o: OptionMetadata): List[HandlebarsOption] = {
+    val description = formatJavadoc(
+      getHandlebarsOptionDescription(o),
+      isMemberJavadoc = true)
+
+    val mainOption = HandlebarsOption(
+      o.name,
+      o.originalName,
+      description)
+
+    val aliasOptions = o.aliases.map({ a =>
+      HandlebarsOption(
+        a.name,
+        a.originalName,
+        description)
+    }).toList
+
+    mainOption :: aliasOptions
+  }
+
+  private def getHandlebarsOptionDescription(o: OptionMetadata): String =
+    o.description.getOrElse(s"This is a wrapper for ${o.originalName} parameter")
+
+  private def getHandlebarsModuleDescription(moduleMetadata: ModuleMetadata): String =
+    moduleMetadata
+      .description
+      .getOrElse(
+        moduleMetadata
+          .shortDescription
+          .getOrElse(s"This is a wrapper for ${moduleMetadata.originalName} module"))
 
   private def formatJavadoc(text: String, isMemberJavadoc: Boolean): String = {
     val indentation = if (isMemberJavadoc) 4 else 0
     val maxLineLength = 80 - indentation - " * ".length
 
-    indentText(javadocify(wrapTextAround(insertParagraphs(text).split('\n'), maxLineLength)), indentation).mkString("\n")
+    indentText(
+      javadocify(
+        wrapTextAround(
+          insertParagraphs(text).split('\n'),
+          maxLineLength)),
+      indentation
+    ).mkString("\n")
   }
-
 
   private def wrapTextAround(lines: Seq[String], maxLineLength: Int): Seq[String] =
     lines
