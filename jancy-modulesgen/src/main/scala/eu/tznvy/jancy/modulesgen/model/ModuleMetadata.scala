@@ -1,5 +1,15 @@
 package eu.tznvy.jancy.modulesgen.model
 
+/**
+  * Represents an Ansible module
+  *
+  * @param className          the name for the generated class in pascal case
+  * @param originalName       the module name in snake case
+  * @param namespace          the namespace for the generated class
+  * @param description        long module description
+  * @param shortDescription   short module description
+  * @param options            module parameters' metadata
+  */
 case class ModuleMetadata(
   className: String,
   originalName: String,
