@@ -10,7 +10,6 @@ import resource._
 
 import scala.collection.JavaConverters._
 import scala.io.Source
-import scala.util.Try
 
 /**
   * Reads module metadata from a module file
