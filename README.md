@@ -10,10 +10,39 @@ targeting JVM).
 ## Getting jancy
 
 jancy is currently in development and no stable version has been released yet. Feel free to try out the current snapshot.
+You can download it from [here](https://jancy.tznvy.eu/m2/eu/tznvy/jancy-transpiler_2.12/0.1.0-SNAPSHOT/jancy-transpiler_2.12-0.1.0-SNAPSHOT.jar).
+Just make sure to rename the jar to `jancy` before proceeding.
 
-* [jancy executable](https://jancy.tznvy.eu/current_build/jancy)
+To build it from source:
 
-### Maven
+```bash
+git clone https://github.com/brthanmathwoag/jancy
+cd jancy
+./sbt jancyTranspiler/assembly
+cp jancy-transpiler/target/scala-2.12/jancy ./
+```
+
+Make note you don't need to have sbt (or Scala) installed beforehand; Just run the `sbt` script from
+this repository and it will install the current version of sbt if it cannot be found in the path.
+
+## Usage
+
+```bash
+$ jancy
+usage: jancy -j /path/to/configuration.jar
+ -j,--jar </path/to/configuration.jar>   The path to a jar file containing
+                                         the configuration.
+ -o,--output </output/path/>             The directory where the ansible
+                                         configuration will be
+                                         saved.Defaults to current
+                                         directory.
+ -v,--version                            Prints version information and
+                                         exits.
+```
+
+## Getting started
+
+Add `jancy-common` as a dependency. If you use Maven:
 
 ```xml
 <project>
@@ -35,29 +64,12 @@ jancy is currently in development and no stable version has been released yet. F
 </project>
 ```
 
-### sbt
+If you use sbt:
 
 ```scala
 resolvers += "jancy snapshots" at "https://jancy.tznvy.eu/m2"
 libraryDependencies += "eu.tznvy" % "jancy-common" % "0.1.0-SNAPSHOT"
 ```
-
-## Usage
-
-```bash
-$ jancy
-usage: jancy -j /path/to/configuration.jar
- -j,--jar </path/to/configuration.jar>   The path to a jar file containing
-                                         the configuration.
- -o,--output </output/path/>             The directory where the ansible
-                                         configuration will be
-                                         saved.Defaults to current
-                                         directory.
- -v,--version                            Prints version information and
-                                         exits.
-```
-
-## Getting started
 
 Create a class implementing the `ConfigurationFactory` interface from `jancy-common-*.jar`:
 
@@ -98,20 +110,11 @@ cd HelloWorld
 ansible-playbook -i inventory site.yml
 ```
 
-## Building from sources
-
-jancy is built using sbt. You don't need to have it (or Scala) installed beforehand; Just run the `sbt` script from
- this repository and it will install the current version of sbt if it cannot be found in the path.
-
-`./sbt test` - will run all tests
-
-`./sbt buildAll` - will compile and assemble the jancy-common jar and the transpiler
-
 ## Examples
 
 ```bash
 # make sure the transpiler is built
-./sbt buildAll
+./sbt jancyTranspiler/assembly
 
 # assemble jars for example playbooks
 ./sbt examples/assembly
