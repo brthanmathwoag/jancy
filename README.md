@@ -5,6 +5,7 @@ targeting JVM).
 
 [![build status](https://jancy.tznvy.eu/content/buildstatus.svg)](https://travis-ci.org/brthanmathwoag/jancy)
 [![tests status](https://jancy.tznvy.eu/content/testsstatus.svg)](https://travis-ci.org/brthanmathwoag/jancy)
+[![test coverage](https://jancy.tznvy.eu/content/coveragestatus.svg)](https://travis-ci.org/brthanmathwoag/jancy)
 
 ## Getting jancy
 
