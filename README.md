@@ -46,12 +46,15 @@ libraryDependencies += "eu.tznvy" % "jancy-common" % "0.1.0-SNAPSHOT"
 
 ```bash
 $ jancy
-usage: jancy
+usage: jancy -j /path/to/configuration.jar
  -j,--jar </path/to/configuration.jar>   The path to a jar file containing
                                          the configuration.
  -o,--output </output/path/>             The directory where the ansible
-                                         configuration will be saved.
-                                         Defaults to current directory.
+                                         configuration will be
+                                         saved.Defaults to current
+                                         directory.
+ -v,--version                            Prints version information and
+                                         exits.
 ```
 
 ## Getting started
