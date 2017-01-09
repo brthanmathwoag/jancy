@@ -92,7 +92,19 @@ lazy val jancyTranspiler = project
         .value
         .copy(prependShellScript = Some(
           sbtassembly.AssemblyPlugin.defaultShellScript)),
-    assemblyJarName in assembly := "jancy"
+    assemblyJarName in assembly := "jancy",
+    artifact in (Compile, assembly) :=
+      (artifact in (Compile, assembly))
+        .value
+        .copy(classifier = Some("assembly")),
+    addArtifact(artifact in (Compile, assembly), assembly),
+    publishArtifact in (Compile, packageDoc) := false,
+    publishArtifact in (Test, packageDoc) := false,
+    publishArtifact in (Compile, packageBin) := false,
+    publishArtifact in (Test, packageBin) := false,
+    publishArtifact in (Compile, packageSrc) := false,
+    publishArtifact in (Test, packageSrc) := false,
+    pomPostProcess := Helpers.dropIfDependency
   )
 
 TaskKey[Unit]("buildAll", "Build all artifacts") := {
