@@ -3,7 +3,7 @@ lazy val commonSettings = Seq(
   version := "0.1.0-SNAPSHOT",
   scalaVersion := "2.12.0",
   test in assembly := {},
-  coverageEnabled := true
+  coverageEnabled in test := true
 )
 
 lazy val jancyCore = project
