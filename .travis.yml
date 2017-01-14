@@ -4,7 +4,8 @@ jdk:        oraclejdk8
 sudo:       false
 
 script:
-    -   sbt test buildAll examples/assembly coverageReport
+    -   sbt coverage test coverageReport
+    -   sbt clean jancyCommon/publish-m2 jancyTranspiler/publish-m2 examples/assembly
 
 cache:
     directories:
