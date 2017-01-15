@@ -6,7 +6,7 @@ object SpecialCases {
 
   private val allObjects: Map[String, SpecialCase] =
     Seq(Blockinfile, Lineinfile, BigipDeviceSshd, IpmiBoot, IpmiPower,
-      BigipVirtualServer, PostgresqlUser)
+      BigipVirtualServer, PostgresqlUser, PamLimits)
       .map({ o => (o.moduleName, o) })
       .toMap
 
