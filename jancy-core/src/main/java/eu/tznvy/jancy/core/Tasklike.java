@@ -33,4 +33,8 @@ public abstract class Tasklike {
     public Optional<Action> getAction() {
         return this.action;
     }
+
+    public String getName() {
+        return (String)this.arguments.get("name");
+    }
 }

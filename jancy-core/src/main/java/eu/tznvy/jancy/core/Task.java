@@ -18,6 +18,14 @@ public class Task extends Tasklike {
         return new Task(this.arguments, Optional.of(action));
     }
 
+    public Task notify(Handler... handlers) {
+        String[] handlerNames = new String[handlers.length];
+        for(int i = 0; i < handlers.length; i++) {
+            handlerNames[i] = handlers[i].getName();
+        }
+        return new Task(withArgument("notify", handlerNames), this.action);
+    }
+
     public Task notify(Object... value) {
         return new Task(withArgument("notify", value), this.action);
     }

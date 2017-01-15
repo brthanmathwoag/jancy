@@ -29,8 +29,8 @@ public class ConfigurationFactory implements eu.tznvy.jancy.core.ConfigurationFa
         dbVars.put("upassword", "abc");
 
         Group dbservers = new Group("dbservers")
-                .hosts(new Host("web2"))
-                .vars(dbVars);
+            .hosts(new Host("web2"))
+            .vars(dbVars);
 
         HashMap<String, Object> allVars = new HashMap<>();
         allVars.put("httpd_port", 89);
@@ -38,20 +38,26 @@ public class ConfigurationFactory implements eu.tznvy.jancy.core.ConfigurationFa
         allVars.put("repository", "https://github.com/bennojoy/mywebapp.git");
 
         Inventory inventory = new Inventory("hosts")
-                .groups(webservers, dbservers)
-                .vars(allVars);
+            .groups(webservers, dbservers)
+            .vars(allVars);
+
+        Handler restartNtp = new Handler("restart ntp")
+            .action(new Service()
+                .name("ntpd")
+                .state(Service.State.RESTARTED));
+
+        Handler restartIptables = new Handler("restart iptables")
+            .action(new Service()
+                .name("iptables")
+                .state(Service.State.RESTARTED));
+
+        Handler restartMysql = new Handler("restart mysql")
+            .action(new Service()
+                .name("mysqld")
+                .state(Service.State.RESTARTED));
 
         Role common = new Role("common")
-            .handlers(
-                new Handler("restart ntp")
-                    .action(new Service()
-                        .name("ntpd")
-                        .state(Service.State.RESTARTED)),
-                new Handler("restart iptables")
-                    .action(new Service()
-                        .name("iptables")
-                        .state(Service.State.RESTARTED))
-            )
+            .handlers(restartNtp, restartIptables)
             .tasks(
                 new Task("Install ntp")
                     .action(new Yum()
@@ -63,7 +69,7 @@ public class ConfigurationFactory implements eu.tznvy.jancy.core.ConfigurationFa
                         .src("ntp.conf.j2")
                         .dest("/etc/ntp.conf"))
                     .tags("ntp")
-                    .notify("restart ntp"),
+                    .notify(restartNtp),
                 new Task("Start the ntp service")
                     .action(new Service()
                         .name("ntpd")
@@ -78,6 +84,7 @@ public class ConfigurationFactory implements eu.tznvy.jancy.core.ConfigurationFa
             );
 
         Role web = new Role("web")
+            .handlers(restartIptables)
             .tasks(
                 //included from Install_httpd.yml
                 new Task("Install http and php etc")
@@ -99,7 +106,7 @@ public class ConfigurationFactory implements eu.tznvy.jancy.core.ConfigurationFa
                         .regexp("{{ httpd_port }}")
                         .insertafter("^:OUTPUT ")
                         .line("-A INPUT -p tcp  --dport {{ httpd_port }} -j  ACCEPT"))
-                    .notify("restart iptables"),
+                    .notify(restartIptables),
                 new Task("http service state")
                     .action(new Service()
                         .name("httpd")
@@ -120,15 +127,10 @@ public class ConfigurationFactory implements eu.tznvy.jancy.core.ConfigurationFa
                     .action(new Template()
                         .src("index.php.j2")
                         .dest("/var/www/html/index.php"))
-            )
-            .handlers(
-                new Handler("restart iptables")
-                    .action(new Service()
-                        .name("iptables")
-                        .state(Service.State.RESTARTED))
             );
 
         Role db = new Role("db")
+            .handlers(restartMysql, restartIptables)
             .tasks(
                 new Task("Install Mysql package")
                     .action(new Yum()
@@ -149,7 +151,7 @@ public class ConfigurationFactory implements eu.tznvy.jancy.core.ConfigurationFa
                     .action(new Template()
                         .src("my.cnf.j2")
                         .dest("/etc/my.cnf"))
-                    .notify("restart mysql"),
+                    .notify(restartMysql),
                 new Task("Start Mysql Service")
                     .action(new Service()
                         .name("mysqld")
@@ -162,7 +164,7 @@ public class ConfigurationFactory implements eu.tznvy.jancy.core.ConfigurationFa
                         .regexp("{{ mysql_port }}")
                         .insertafter("^:OUTPUT ")
                         .line("-A INPUT -p tcp  --dport {{ mysql_port }} -j  ACCEPT"))
-                    .notify("restart iptables"),
+                    .notify(restartIptables),
                 new Task("Create Application Database")
                     .action(new MysqlDb()
                         .name("{{ dbname }}")
@@ -174,39 +176,29 @@ public class ConfigurationFactory implements eu.tznvy.jancy.core.ConfigurationFa
                         .priv("*.*:ALL")
                         .host("%")
                         .state(MysqlUser.State.PRESENT))
-            )
-            .handlers(
-                new Handler("restart mysql")
-                    .action(new Service()
-                        .name("mysqld")
-                        .state(Service.State.RESTARTED)),
-                new Handler("restart iptables")
-                    .action(new Service()
-                        .name("iptables")
-                        .state(Service.State.RESTARTED))
             );
 
         Playbook commonPlay = new Playbook("apply common configuration to all nodes")
-                .hosts(new Host("all"))
-                .roles(common)
-                //.remoteUser("root")
+            .hosts(new Host("all"))
+            .roles(common)
+            //.remoteUser("root")
         ;
 
         Playbook webPlay = new Playbook("configure and deploy the webservers and application code")
-                .hosts(webservers)
-                .roles(web)
-                //.remoteUser("root")
+            .hosts(webservers)
+            .roles(web)
+            //.remoteUser("root")
         ;
 
         Playbook dbPlay = new Playbook("deploy MySQL and configure the databases")
-                .hosts(dbservers)
-                .roles(db)
-                //.remoteUser("root")
+            .hosts(dbservers)
+            .roles(db)
+            //.remoteUser("root")
         ;
 
         return new Configuration("lamp_simple")
-                .inventories(inventory)
-                .roles(common, web, db)
-                .playbooks(commonPlay, webPlay, dbPlay);
+            .inventories(inventory)
+            .roles(common, web, db)
+            .playbooks(commonPlay, webPlay, dbPlay);
     }
 }
