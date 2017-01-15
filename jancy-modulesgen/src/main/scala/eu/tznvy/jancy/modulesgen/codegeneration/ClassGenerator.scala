@@ -3,7 +3,7 @@ package eu.tznvy.jancy.modulesgen.codegeneration
 import com.github.jknack.handlebars.context.FieldValueResolver
 import com.github.jknack.handlebars.{Context, Handlebars, Template}
 import com.github.jknack.handlebars.io.ClassPathTemplateLoader
-import eu.tznvy.jancy.modulesgen.model.{ModuleMetadata, OptionMetadata}
+import eu.tznvy.jancy.modulesgen.model.{Choices, ModuleMetadata, OptionAliasMetadata, OptionMetadata}
 
 /**
   * Generates wrapper source code based on ModuleMetadata via Handlebars
@@ -35,31 +35,92 @@ object ClassGenerator {
         isMemberJavadoc = false),
       moduleMetadata
         .options
-        .flatMap(buildHandlebarsOptions)
-        .groupBy(_.name)
+        .flatMap(buildHandlebarsSetters(moduleMetadata.className))
+        .groupBy({ o => (o.name, o.getClass) })
         .map(_._2.head)
+        .toArray
+        .sortBy(_.name),
+      moduleMetadata
+        .options
+        .filter({ o => o.choices.isDefined && o.choices.flatMap(pickBoolValues).isEmpty })
+        .map(_.choices.get)
+        .map(buildHandlebarsChoices)
         .toArray
     )
 
-  private def buildHandlebarsOptions(o: OptionMetadata): List[HandlebarsOption] = {
+  private def buildHandlebarsSetters(className: String)(o: OptionMetadata): List[HandlebarsSetter] = {
     val description = formatJavadoc(
       getHandlebarsOptionDescription(o),
       isMemberJavadoc = true)
 
-    val mainOption = HandlebarsOption(
-      o.name,
-      o.originalName,
-      description)
+    (OptionAliasMetadata(o.name, o.originalName) :: o.aliases.toList)
+      .flatMap({ alias =>
 
-    val aliasOptions = o.aliases.map({ a =>
-      HandlebarsOption(
-        a.name,
-        a.originalName,
-        description)
-    }).toList
+        val weaktypedSetter =
+          Some(
+            WeaktypedSetter(
+              alias.name,
+              alias.originalName,
+              description,
+              className))
 
-    mainOption :: aliasOptions
+        val boolValues = o.choices.flatMap(pickBoolValues)
+
+        val enumBackedSetter = o.choices
+          .filter({ cs => boolValues.isEmpty })
+          .map({ cs =>
+            EnumBackedSetter(
+              alias.name,
+              alias.originalName,
+              description,
+              className,
+              cs.name)
+          })
+
+        val boolBackedSetter = boolValues.map({ case (trueValue, falseValue) =>
+          BoolBackedSetter(
+            alias.name,
+            alias.originalName,
+            description,
+            className,
+            trueValue,
+            falseValue
+          )
+        })
+
+        List(weaktypedSetter, enumBackedSetter, boolBackedSetter)
+          .collect({ case Some(s) => s })
+    })
   }
+
+  private def pickBoolValues(choices: Choices): Option[(String, String)] = {
+    val trueStrings = Seq("yes", "1", "true")
+    val falseStrings = Seq("no", "0", "false")
+
+    val trueValue =
+      choices
+        .choices
+        .map(_.originalName)
+        .collectFirst({ case s if trueStrings.contains(s) => s })
+
+    val falseValue =
+      choices
+        .choices
+        .map(_.originalName)
+        .collectFirst({ case s if falseStrings.contains(s) => s })
+
+    trueValue.flatMap({ t => falseValue.map({ f => (t, f) }) })
+  }
+
+  private def buildHandlebarsChoices(cs: Choices): HandlebarsChoices =
+    HandlebarsChoices(
+      cs.name,
+      choices = cs.choices.map({ c =>
+        HandlebarsChoice(
+          c.name,
+          c.originalName)
+      }).toArray
+    )
 
   private def getHandlebarsOptionDescription(o: OptionMetadata): String =
     o.description.getOrElse(s"This is a wrapper for ${o.originalName} parameter")
@@ -111,16 +172,64 @@ object ClassGenerator {
     originalName: String,
     namespace: String,
     javadoc: String,
-    options: Array[HandlebarsOption]
+    options: Array[HandlebarsSetter],
+    choices: Array[HandlebarsChoices]
   )
 
-  private case class HandlebarsOption(
-    name: String,
-    originalName: String,
-    javadoc: String
+  private case class WeaktypedSetter(
+    override val name: String,
+    override val originalName: String,
+    override val javadoc: String,
+    override val className: String
+  ) extends HandlebarsSetter(
+    name, originalName, javadoc, className
+  ) {
+    val isWeaktyped: Boolean = true
+  }
+
+  private case class EnumBackedSetter(
+    override val name: String,
+    override val originalName: String,
+    override val javadoc: String,
+    override val className: String,
+    typeName: String
+  ) extends HandlebarsSetter(
+    name, originalName, javadoc, className
+  ) {
+    val isEnumBacked: Boolean = true
+  }
+
+  private case class BoolBackedSetter(
+    override val name: String,
+    override val originalName: String,
+    override val javadoc: String,
+    override val className: String,
+    trueValue: String,
+    falseValue: String
+  ) extends HandlebarsSetter(
+    name, originalName, javadoc, className
+  ) {
+    val isBoolBacked: Boolean = true
+  }
+
+  private class HandlebarsSetter(
+    val name: String,
+    val originalName: String,
+    val javadoc: String,
+    val className: String
   )
 
   private case class HandlebarsModifier(
+    name: String,
+    originalName: String
+  )
+
+  private case class HandlebarsChoices(
+    name: String,
+    choices: Array[HandlebarsChoice]
+  )
+
+  private case class HandlebarsChoice(
     name: String,
     originalName: String
   )

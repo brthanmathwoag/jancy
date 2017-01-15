@@ -5,6 +5,7 @@ import eu.tznvy.jancy.core.*;
 import eu.tznvy.jancy.modules.commands.Command;
 import eu.tznvy.jancy.modules.database.mysql.MysqlDb;
 import eu.tznvy.jancy.modules.database.mysql.MysqlUser;
+import eu.tznvy.jancy.modules.files.Acl;
 import eu.tznvy.jancy.modules.files.Lineinfile;
 import eu.tznvy.jancy.modules.files.Template;
 import eu.tznvy.jancy.modules.packaging.os.Yum;
@@ -45,17 +46,17 @@ public class ConfigurationFactory implements eu.tznvy.jancy.core.ConfigurationFa
                 new Handler("restart ntp")
                     .action(new Service()
                         .name("ntpd")
-                        .state("restarted")),
+                        .state(Service.State.RESTARTED)),
                 new Handler("restart iptables")
                     .action(new Service()
                         .name("iptables")
-                        .state("restarted"))
+                        .state(Service.State.RESTARTED))
             )
             .tasks(
                 new Task("Install ntp")
                     .action(new Yum()
                         .name("ntp")
-                        .state("present"))
+                        .state(Yum.State.PRESENT))
                     .tags("ntp"),
                 new Task("Configure ntp file")
                     .action(new Template()
@@ -66,8 +67,8 @@ public class ConfigurationFactory implements eu.tznvy.jancy.core.ConfigurationFa
                 new Task("Start the ntp service")
                     .action(new Service()
                         .name("ntpd")
-                        .state("started")
-                        .enabled("yes"))
+                        .state(Service.State.STARTED)
+                        .enabled(true))
                     .tags("ntp"),
                 new Task("Test to see if selinux is running")
                     .action(new Command()
@@ -82,7 +83,7 @@ public class ConfigurationFactory implements eu.tznvy.jancy.core.ConfigurationFa
                 new Task("Install http and php etc")
                     .action(new Yum()
                         .name("{{ item }}")
-                        .state("present"))
+                        .state(Yum.State.PRESENT))
                     .withItems(
                        "httpd",
                         "php",
@@ -93,8 +94,8 @@ public class ConfigurationFactory implements eu.tznvy.jancy.core.ConfigurationFa
                 new Task("insert iptables rule for httpd")
                     .action(new Lineinfile()
                         .dest("/etc/sysconfig/iptables")
-                        .create("yes")
-                        .state("present")
+                        .create(true)
+                        .state(Lineinfile.State.PRESENT)
                         .regexp("{{ httpd_port }}")
                         .insertafter("^:OUTPUT ")
                         .line("-A INPUT -p tcp  --dport {{ httpd_port }} -j  ACCEPT"))
@@ -102,13 +103,13 @@ public class ConfigurationFactory implements eu.tznvy.jancy.core.ConfigurationFa
                 new Task("http service state")
                     .action(new Service()
                         .name("httpd")
-                        .state("started")
-                        .enabled("yes")),
+                        .state(Service.State.STARTED)
+                        .enabled(true)),
                 new Task("Configure SELinux to allow httpd to connect to remote database")
                     .action(new Seboolean()
                         .name("httpd_can_network_connect_db")
-                        .state("true")
-                        .persistent("yes"))
+                        .state(true)
+                        .persistent(true))
                     .when("sestatus.rc != 0"),
                 //included from copy_code.yml
                 new Task("Copy the code from repository")
@@ -124,7 +125,7 @@ public class ConfigurationFactory implements eu.tznvy.jancy.core.ConfigurationFa
                 new Handler("restart iptables")
                     .action(new Service()
                         .name("iptables")
-                        .state("restarted"))
+                        .state(Service.State.RESTARTED))
             );
 
         Role db = new Role("db")
@@ -132,7 +133,7 @@ public class ConfigurationFactory implements eu.tznvy.jancy.core.ConfigurationFa
                 new Task("Install Mysql package")
                     .action(new Yum()
                         .name("{{ item }}")
-                        .state("installed"))
+                        .state(Yum.State.INSTALLED))
                     .withItems(
                         "mysql-server",
                         "MySQL-python",
@@ -141,8 +142,8 @@ public class ConfigurationFactory implements eu.tznvy.jancy.core.ConfigurationFa
                 new Task("Configure SELinux to start mysql on any port")
                     .action(new Seboolean()
                         .name("mysql_connect_any")
-                        .state("true")
-                        .persistent("yes"))
+                        .state(true)
+                        .persistent(true))
                     .when("sestatus.rc != 0"),
                 new Task("Create Mysql configuration file")
                     .action(new Template()
@@ -152,12 +153,12 @@ public class ConfigurationFactory implements eu.tznvy.jancy.core.ConfigurationFa
                 new Task("Start Mysql Service")
                     .action(new Service()
                         .name("mysqld")
-                        .state("started")
-                        .enabled("yes")),
+                        .state(Service.State.STARTED)
+                        .enabled(true)),
                 new Task("insert iptables rule")
                     .action(new Lineinfile()
                         .dest("/etc/sysconfig/iptables")
-                        .state("present")
+                        .state(Lineinfile.State.PRESENT)
                         .regexp("{{ mysql_port }}")
                         .insertafter("^:OUTPUT ")
                         .line("-A INPUT -p tcp  --dport {{ mysql_port }} -j  ACCEPT"))
@@ -165,24 +166,24 @@ public class ConfigurationFactory implements eu.tznvy.jancy.core.ConfigurationFa
                 new Task("Create Application Database")
                     .action(new MysqlDb()
                         .name("{{ dbname }}")
-                        .state("present")),
+                        .state(MysqlDb.State.PRESENT)),
                 new Task("Create Application DB User")
                     .action(new MysqlUser()
                         .name("{{ dbuser }}")
                         .password("{{ upassword }}")
                         .priv("*.*:ALL")
                         .host("%")
-                        .state("present"))
+                        .state(MysqlUser.State.PRESENT))
             )
             .handlers(
                 new Handler("restart mysql")
                     .action(new Service()
                         .name("mysqld")
-                        .state("restarted")),
+                        .state(Service.State.RESTARTED)),
                 new Handler("restart iptables")
                     .action(new Service()
                         .name("iptables")
-                        .state("restarted"))
+                        .state(Service.State.RESTARTED))
             );
 
         Playbook commonPlay = new Playbook("apply common configuration to all nodes")

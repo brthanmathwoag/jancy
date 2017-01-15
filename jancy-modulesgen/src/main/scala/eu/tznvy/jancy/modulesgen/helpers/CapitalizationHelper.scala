@@ -16,4 +16,10 @@ object CapitalizationHelper {
     //TODO: a faster way maybe
     pascalCase.head.toLower + pascalCase.tail
   }
+
+  def camelCaseToPascalCase(camelCase: String): String =
+    camelCase.head.toUpper + camelCase.tail
+
+  def snakeCaseToAllCaps(snakeCase: String): String =
+    snakeCase.map(_.toUpper)
 }

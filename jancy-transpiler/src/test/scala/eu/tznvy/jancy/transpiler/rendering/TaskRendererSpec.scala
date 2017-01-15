@@ -2,7 +2,7 @@ package eu.tznvy.jancy.transpiler.rendering
 
 import eu.tznvy.jancy.core.Task
 import eu.tznvy.jancy.modules.commands.Command
-import eu.tznvy.jancy.modules.files.Copy
+import eu.tznvy.jancy.modules.files.{Acl, Copy}
 import eu.tznvy.jancy.modules.packaging.os.Apt
 import eu.tznvy.jancy.modules.system.{Ufw, User}
 import org.scalatest.FunSpec
@@ -50,6 +50,50 @@ class TaskRendererSpec extends FunSpec {
         .proto("tcp")
         .port("22")
         .toTask("Allow ssh through firewall")
+
+      val actual = new TaskRenderer().render(task)
+
+      assertResult (expected) { actual }
+    }
+
+    it("should render enum-backed arguments properly") {
+
+      val expected =
+        """name: Allow ssh through firewall
+          |ufw: |-
+          |  direction='in'
+          |  port='22'
+          |  proto='tcp'
+          |  rule='allow'
+          |""".stripMargin
+
+      val task = new Ufw()
+        .rule(Ufw.Rule.ALLOW)
+        .direction(Ufw.Direction.IN)
+        .proto(Ufw.Proto.TCP)
+        .port("22")
+        .toTask("Allow ssh through firewall")
+
+      val actual = new TaskRenderer().render(task)
+
+      assertResult (expected) { actual }
+    }
+
+    it("should render boolean-backed arguments properly") {
+
+      val expected =
+        """name: Set httpd config permissions
+          |acl: |-
+          |  follow='yes'
+          |  name='/etc/nginx/'
+          |  permissions='700'
+          |""".stripMargin
+
+      val task = new Acl()
+        .name("/etc/nginx/")
+        .follow(true)
+        .permissions("700")
+        .toTask("Set httpd config permissions")
 
       val actual = new TaskRenderer().render(task)
 

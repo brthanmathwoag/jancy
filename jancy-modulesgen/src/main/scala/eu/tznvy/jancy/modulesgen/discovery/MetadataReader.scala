@@ -4,7 +4,8 @@ import java.io.File
 import java.util.regex.Pattern
 
 import eu.tznvy.jancy.modulesgen.helpers.CapitalizationHelper
-import eu.tznvy.jancy.modulesgen.model.{ModuleMetadata, OptionAliasMetadata, OptionMetadata}
+import eu.tznvy.jancy.modulesgen.model.{Choice, Choices, ModuleMetadata, OptionAliasMetadata, OptionMetadata}
+import eu.tznvy.jancy.modulesgen.specialcases.{SpecialCases, SpecialCase}
 import org.yaml.snakeyaml.Yaml
 import resource._
 
@@ -24,9 +25,10 @@ object MetadataReader {
     val description = resolveDescription(navigate[String](documentation, List("description")))
     val shortDescription = resolveDescription(navigate[String](documentation, List("short_description")))
     val areCommonArgsEnabled = checkIfFileCommonArgsAreEnabled(file)
+    val specialCase = SpecialCases.get(name)
     val options = (
       if (areCommonArgsEnabled) mergeOptionsWithCommonArgs _
-      else identity[Seq[OptionMetadata]] _)(readOptions(documentation))
+      else identity[Seq[OptionMetadata]] _)(readOptions(specialCase, documentation))
 
     ModuleMetadata(
       className,
@@ -79,28 +81,59 @@ object MetadataReader {
     Option(found)
   }
 
-  private def readOptions(documentation: Any): Seq[OptionMetadata] = {
+  private def readOptions(specialCase: Option[SpecialCase], documentation: Any): Seq[OptionMetadata] = {
     val maybeOptions = navigate[java.util.Map[String, Object]](documentation, List("options"))
 
     maybeOptions.map({ os =>
       os.asScala.map({ o =>
 
         val originalName = o._1
-        val name = escapeJavaKeywords(CapitalizationHelper.snakeCaseToCamelCase(fixInconsistencies(originalName)))
-        val description = resolveDescription(navigate[String](o._2, List("description"))).map(escapeEndOfComment)
+
+        val name = (escapeOptionName _)
+          .andThen(CapitalizationHelper.snakeCaseToCamelCase)
+          .andThen(escapeJavaKeywords)(originalName)
+
+        val description = resolveDescription(navigate[String](o._2, List("description")))
+          .map(escapeEndOfComment)
+
         val default = navigate[String](o._2, List("default"))
+
         val required = navigate[Boolean](o._2, List("required")).getOrElse(false)
 
-        val choices = navigate[java.util.List[String]](o._2, List("choices"))
-          .map(_.asScala.toList)
-          .getOrElse(List())
+        val choicesEnumName = CapitalizationHelper.camelCaseToPascalCase(name)
+
+        val choices = navigate[java.util.List[_]](o._2, List("choices"))
+          .map({ cs => cs.asScala.map({ c => c.toString }).filter(!_.trim.isEmpty) })
+          .flatMap({ cs =>
+            if (specialCase.exists(_.optionsWithNoEnum.contains(originalName))) None
+            else Some(Choices(
+              choicesEnumName,
+              if (specialCase.exists(_.optionsWithCustomEnumBuilder.contains(originalName)))
+                specialCase.get.optionsWithCustomEnumBuilder(originalName)(cs)
+              else cs
+                .toList
+                .map({ c =>
+                  if (c.trim == "") None
+                  else Some(
+                    Choice(
+                      (CapitalizationHelper.snakeCaseToAllCaps _)
+                        .andThen(escapeEnumValueName)(c),
+                      c))
+                })
+                .collect({ case Some(c) => c })
+                .groupBy(_.name)
+                .map(_._2.head)
+                .toSeq
+            ))
+          })
 
         val aliases = navigate[java.util.List[String]](o._2, List("aliases"))
           .map(_.asScala.toList)
           .getOrElse(List())
           .map({ originalName =>
-            val name = escapeJavaKeywords(CapitalizationHelper.snakeCaseToCamelCase(fixInconsistencies(originalName)))
-
+            val name = (escapeOptionName _)
+              .andThen(CapitalizationHelper.snakeCaseToCamelCase)
+              .andThen(escapeJavaKeywords)(originalName)
             OptionAliasMetadata(
               name,
               originalName)
@@ -118,7 +151,28 @@ object MetadataReader {
     }).getOrElse(Seq[OptionMetadata]())
   }
 
-  private def fixInconsistencies(name: String): String =
+  private def escapeEnumValueName(name: String): String = {
+    val escaped = name
+      //workaround for cloud.profitbricks.ProfibricksDatacenter
+      .replace("/", "_")
+      //workaround for cloud.amazon.RdsParamGroup
+      .replace(".", "_")
+      //workaround for RaxMonCheck
+      .replace("-", "_")
+      //workaround for DatadogMonitor
+      .replace(" ", "_")
+      //workaround for RdsParamGroup
+      .replace("'", "")
+      //workaround for YumRepository
+      .replace(":", "_")
+      //workaround for GlusterVolume
+      .replace(",", "_")
+
+    if(escaped.head.isDigit) "_" + escaped
+    else escaped
+  }
+
+  private def escapeOptionName(name: String): String =
     name
       //workaround for storage.netapp.NetappEHostgroup
       .replace("-", "_")
@@ -179,7 +233,7 @@ object MetadataReader {
           false,
           None,
           None,
-          Seq(),
+          None,
           Seq())
       }).toMap
 }

@@ -75,7 +75,7 @@ class ClassGeneratorSpec extends FunSpec {
             true,
             Some(input2),
             None,
-            List(),
+            None,
             List())))
 
       val content = ClassGenerator.generateClass(module)
@@ -109,7 +109,7 @@ class ClassGeneratorSpec extends FunSpec {
             true,
             None,
             None,
-            List(),
+            None,
             List())))
 
       val content = ClassGenerator.generateClass(module)

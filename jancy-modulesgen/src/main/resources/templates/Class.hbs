@@ -18,11 +18,17 @@ public class {{ name }} extends Action {
     public String getModuleName() {
         return "{{ originalName }}";
     }
-
     {{# each options }}
-{{{ javadoc }}}
-    public {{ ../name }} {{ name }}(String {{ name }}) {
-        return new {{ ../name }}(withArgument("{{ originalName }}", {{ name }}));
+{{#if isWeaktyped }}{{> WeaktypedSetter }}{{/if}}{{#if isBoolBacked }}{{> BoolSetter }}{{/if}}{{#if isEnumBacked }}{{> EnumSetter }}{{/if}}
+    {{/ each }}
+    {{# each choices }}
+    public enum {{ name }} {
+        {{# each choices }}{{ name }}("{{ originalName }}"){{#unless @last }},{{/unless }}
+        {{/ each }};
+
+        private final String value;
+        {{ name }}(String value) { this.value = value; }
+        public String getValue() { return this.value; }
     }
     {{/ each }}
 }
