@@ -7,8 +7,8 @@ import eu.tznvy.jancy.core.Action;
 {{{ javadoc }}}
 public class {{ name }} extends Action {
 
-    public {{ name }}() {
-        super();
+    public {{ name }}({{# if isFreeform}}String freeForm{{/ if}}) {
+        super({{# if isFreeform }}"free_form", freeForm{{/ if}});
     }
 
     protected {{ name }}(Map<String, String> arguments) {

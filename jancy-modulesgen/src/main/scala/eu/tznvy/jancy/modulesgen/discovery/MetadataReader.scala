@@ -26,9 +26,10 @@ object MetadataReader {
     val shortDescription = resolveDescription(navigate[String](documentation, List("short_description")))
     val areCommonArgsEnabled = checkIfFileCommonArgsAreEnabled(file)
     val specialCase = SpecialCases.get(name)
-    val options = (
-      if (areCommonArgsEnabled) mergeOptionsWithCommonArgs _
-      else identity[Seq[OptionMetadata]] _)(readOptions(specialCase, documentation))
+    val explicitOptions = readOptions(specialCase, documentation)
+    val options =
+      if (areCommonArgsEnabled) mergeOptionsWithCommonArgs(explicitOptions)
+      else explicitOptions
 
     ModuleMetadata(
       className,

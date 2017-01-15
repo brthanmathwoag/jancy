@@ -15,6 +15,11 @@ public abstract class Action {
         this.arguments = new HashMap<>(arguments);
     }
 
+    protected Action(String key, String value) {
+        this.arguments = new HashMap<>();
+        arguments.put(key, value);
+    }
+
     public abstract String getModuleName();
 
     protected Map<String, String> withArgument(String key, String value) {

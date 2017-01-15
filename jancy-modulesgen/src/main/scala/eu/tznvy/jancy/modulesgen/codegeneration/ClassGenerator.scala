@@ -35,6 +35,7 @@ object ClassGenerator {
         isMemberJavadoc = false),
       moduleMetadata
         .options
+        .filter(_.originalName != "free_form")
         .flatMap(buildHandlebarsSetters(moduleMetadata.className))
         .groupBy({ o => (o.name, o.getClass) })
         .map(_._2.head)
@@ -45,7 +46,8 @@ object ClassGenerator {
         .filter({ o => o.choices.isDefined && o.choices.flatMap(pickBoolValues).isEmpty })
         .map(_.choices.get)
         .map(buildHandlebarsChoices)
-        .toArray
+        .toArray,
+      moduleMetadata.options.exists(_.originalName == "free_form")
     )
 
   private def buildHandlebarsSetters(className: String)(o: OptionMetadata): List[HandlebarsSetter] = {
@@ -173,7 +175,8 @@ object ClassGenerator {
     namespace: String,
     javadoc: String,
     options: Array[HandlebarsSetter],
-    choices: Array[HandlebarsChoices]
+    choices: Array[HandlebarsChoices],
+    isFreeform: Boolean
   )
 
   private case class WeaktypedSetter(

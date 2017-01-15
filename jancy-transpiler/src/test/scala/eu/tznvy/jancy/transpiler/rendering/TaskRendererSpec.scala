@@ -213,8 +213,7 @@ class TaskRendererSpec extends FunSpec {
           |""".stripMargin
 
       val task = new Task("Test to see if selinux is running")
-        .action(new Command()
-          .freeForm("getenforce")
+        .action(new Command("getenforce")
           .chdir("/"))
         .register("sestatus")
 

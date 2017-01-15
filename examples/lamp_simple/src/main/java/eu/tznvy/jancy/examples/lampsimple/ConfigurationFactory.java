@@ -77,8 +77,7 @@ public class ConfigurationFactory implements eu.tznvy.jancy.core.ConfigurationFa
                         .enabled(true))
                     .tags("ntp"),
                 new Task("Test to see if selinux is running")
-                    .action(new Command()
-                        .freeForm("getenforce"))
+                    .action(new Command("getenforce"))
                     .register("sestatus")
                     //.changedWhen("false")
             );
