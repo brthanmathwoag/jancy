@@ -15,26 +15,27 @@ class ArgsParser(executableName: String) {
   private val jarArgKey = "j"
   private val outputArgKey = "o"
   private val versionArgKey = "v"
+  private val helpArgKey = "h"
   
   def tryParse(args: Array[String]): scala.Option[Args] = {
     val parser = new DefaultParser()
-    val options = buildOptions
     
     Try {
-      parse(parser, options, args)
+      parse(parser, args)
     } match {
       case Success(a) => Some(a)
       case Failure(e) => {
-        printUsage(options, e)
+        printUsage( e)
         None
       }
     }
   }
 
-  private def parse(parser: DefaultParser, options: Options, args: Array[String]): Args =
+  private def parse(parser: DefaultParser, args: Array[String]): Args =
     parser.parse(options, args) match {
       case ShouldPrintVersion() => PrintVersionArgs
       case ShouldTranspile(a) => a
+      case ShouldPrintUsage() => PrintUsageArgs
     }
 
   private object ShouldPrintVersion {
@@ -55,17 +56,25 @@ class ArgsParser(executableName: String) {
       else None
   }
 
-  private def printUsage(options: Options, exception: Throwable): Unit = {
-    println(exception)
+  private object ShouldPrintUsage {
+    def unapply(commandLine: CommandLine): Boolean =
+      commandLine.getArgs.length == 0 || commandLine.hasOption(helpArgKey)
+  }
+
+  private def printUsage(exception: Throwable): Unit = {
     println(exception.getMessage)
     println()
+    printUsage()
+  }
+
+  def printUsage(): Unit = {
     val formatter = new HelpFormatter()
     formatter.printHelp(
       s"$executableName -$jarArgKey /path/to/configuration.jar",
       options)
   }
 
-  private def buildOptions: Options = {
+  private lazy val options: Options = {
     val options = new Options
 
     options.addOption(
@@ -92,6 +101,13 @@ class ArgsParser(executableName: String) {
         .builder(versionArgKey)
         .longOpt("version")
         .desc("Prints version information and exits.")
+        .build)
+
+    options.addOption(
+      Option
+        .builder(helpArgKey)
+        .longOpt("help")
+        .desc("Prints usage information and exits.")
         .build)
 
     options

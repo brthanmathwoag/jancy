@@ -30,6 +30,8 @@ this repository and it will install the current version of sbt if it cannot be f
 ```bash
 $ jancy
 usage: jancy -j /path/to/configuration.jar
+ -h,--help                               Prints usage information and
+                                         exits.
  -j,--jar </path/to/configuration.jar>   The path to a jar file containing
                                          the configuration.
  -o,--output </output/path/>             The directory where the ansible

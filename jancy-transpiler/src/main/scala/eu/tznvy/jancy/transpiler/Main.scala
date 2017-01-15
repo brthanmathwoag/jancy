@@ -2,7 +2,7 @@ package eu.tznvy.jancy.transpiler
 
 import java.nio.file.Paths
 
-import eu.tznvy.jancy.transpiler.argparsing.{ArgsParser, PrintVersionArgs, TranspileArgs}
+import eu.tznvy.jancy.transpiler.argparsing.{ArgsParser, PrintUsageArgs, PrintVersionArgs, TranspileArgs}
 import eu.tznvy.jancy.transpiler.discovery.{ConfigurationFactoriesDiscoverer, ContentFilesDiscoverer, ContentFilesExtractor}
 import eu.tznvy.jancy.transpiler.helpers.ConcreteFilesystem
 import eu.tznvy.jancy.transpiler.rendering.ConfigurationRenderer
@@ -12,11 +12,14 @@ object Main {
   private val version = "0.1.0-SNAPSHOT"
 
   def main(args: Array[String]): Unit = {
-    new ArgsParser(executableName)
+    val argParser = new ArgsParser(executableName)
+
+    argParser
       .tryParse(args)
       .map({
         case a: TranspileArgs => transpile(a)
         case PrintVersionArgs => printVersion
+        case PrintUsageArgs => argParser.printUsage()
     }).getOrElse(System.exit(1))
   }
 
