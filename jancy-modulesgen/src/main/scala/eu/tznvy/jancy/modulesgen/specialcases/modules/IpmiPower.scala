@@ -13,8 +13,8 @@ object IpmiPower extends SpecialCase {
   private def makeAnEnum(choices: Seq[String]): Seq[Choice] =
     choices.map({ c =>
       val sides = c.split("--", 2)
-      val name = sides(0)
-      val comment = sides(1)
+      val name = sides(0).trim
+      val comment = sides(1).trim
 
       Choice(
         CapitalizationHelper.snakeCaseToAllCaps(name),
