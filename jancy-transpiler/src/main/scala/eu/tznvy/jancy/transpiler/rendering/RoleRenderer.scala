@@ -18,7 +18,6 @@ class RoleRenderer(filesystem: Filesystem) {
     case class Rendering[T](directoryName: String,  items: Array[T], renderer: Renderer[T]) {
       def apply(): Unit = {
         val outputPath = root
-          .resolve(role.getName)
           .resolve(directoryName)
           .resolve("main.yml")
 

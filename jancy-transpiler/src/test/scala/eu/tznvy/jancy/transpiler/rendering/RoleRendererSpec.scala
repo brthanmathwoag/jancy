@@ -18,7 +18,7 @@ class RoleRendererSpec extends FunSpec {
             .src("etc/apache2/")
             .dest("/etc/apache2/")
             .toTask("Upload httpd config"))
-      val rootPath = Paths.get("/test/root/path/roles")
+      val rootPath = Paths.get("/test/root/path/roles/webserver")
       val filesystem = new InMemoryFilesystem
 
       new RoleRenderer(filesystem).render(role, rootPath)
@@ -36,7 +36,7 @@ class RoleRendererSpec extends FunSpec {
             .src("etc/apache2/")
             .dest("/etc/apache2/")
             .toHandler("Upload httpd config"))
-      val rootPath = Paths.get("/test/root/path/roles")
+      val rootPath = Paths.get("/test/root/path/roles/webserver")
       val filesystem = new InMemoryFilesystem
 
       new RoleRenderer(filesystem).render(role, rootPath)
@@ -54,7 +54,7 @@ class RoleRendererSpec extends FunSpec {
             .src("etc/apache2/")
             .dest("/etc/apache2/")
             .toTask("Upload httpd config"))
-      val rootPath = Paths.get("/test/root/path/roles")
+      val rootPath = Paths.get("/test/root/path/roles/webserver")
       val filesystem = new InMemoryFilesystem
 
       new RoleRenderer(filesystem).render(role, rootPath)
@@ -73,7 +73,7 @@ class RoleRendererSpec extends FunSpec {
               "answer" -> 42.asInstanceOf[Integer]
             ).asJava)
 
-      val rootPath = Paths.get("/test/root/path/roles")
+      val rootPath = Paths.get("/test/root/path/roles/webserver")
       val filesystem = new InMemoryFilesystem
 
       new RoleRenderer(filesystem).render(role, rootPath)
@@ -91,7 +91,7 @@ class RoleRendererSpec extends FunSpec {
             .src("etc/apache2/")
             .dest("/etc/apache2/")
             .toTask("Upload httpd config"))
-      val rootPath = Paths.get("/test/root/path/roles")
+      val rootPath = Paths.get("/test/root/path/roles/webserver")
       val filesystem = new InMemoryFilesystem
 
       new RoleRenderer(filesystem).render(role, rootPath)
