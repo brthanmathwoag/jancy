@@ -20,7 +20,7 @@ object Main {
         case a: TranspileArgs => transpile(a)
         case PrintVersionArgs => printVersion
         case PrintUsageArgs => argParser.printUsage()
-    }).getOrElse(System.exit(1))
+      }).getOrElse(System.exit(1))
   }
 
   def transpile(args: TranspileArgs): Boolean = {
@@ -28,17 +28,25 @@ object Main {
     val configurationRenderer = new ConfigurationRenderer(filesystem)
     val contentFilesExtractor = new ContentFilesExtractor(filesystem)
 
-    ConfigurationFactoriesDiscoverer
-      .getConfigurationFactoriesInJar(args.jar)
-      .foreach({ cf =>
-        val configuration = cf.build
-        val outputPath = Paths.get(args.output.getPath, configuration.getName)
+    val foundConfigurations =
+      ConfigurationFactoriesDiscoverer
+        .getConfigurationFactoriesInJar(args.jar)
+        .map({ cf =>
+          val configuration = cf.build
+          val outputPath = Paths.get(args.output.getPath, configuration.getName)
+          val contentFiles = ContentFilesDiscoverer.discover(args.jar, configuration.getName)
+          (configuration, outputPath, contentFiles)
+        })
 
-        configurationRenderer.render(configuration, outputPath)
+    if (foundConfigurations.isEmpty) {
+      throw new Error("No ConfigurationFactory implementations found in the jar.")
+    }
 
-        val contentFiles = ContentFilesDiscoverer.discover(args.jar, configuration.getName)
-        contentFilesExtractor.extract(contentFiles, args.jar, outputPath)
-      })
+    foundConfigurations.foreach({ case (configuration, outputPath, contentFiles) =>
+      configurationRenderer.render(configuration, outputPath)
+      contentFilesExtractor.extract(contentFiles, args.jar, outputPath)
+    })
+
     true
   }
 
