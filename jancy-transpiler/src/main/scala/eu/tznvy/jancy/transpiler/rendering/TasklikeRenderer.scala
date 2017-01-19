@@ -11,7 +11,7 @@ import scala.collection.mutable
   *
   * @tparam T     a sub-class of Tasklike
   */
-class TasklikeRenderer[T <: Tasklike] extends Renderer[T] {
+class TasklikeRenderer[T <: Tasklike[_]] extends Renderer[T] {
 
   override def render(tasklike: T): String = {
     YamlContext.get.dump(buildModel(tasklike).asJava)
