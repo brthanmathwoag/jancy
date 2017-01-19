@@ -1,7 +1,7 @@
 package eu.tznvy.jancy.modulesgen.discovery
 
 import java.io.File
-
+import scala.annotation.tailrec
 import scala.io.Source
 
 import resource._
@@ -15,12 +15,15 @@ object MetadataFilesDiscoverer {
     getAllFiles(path).filter(isModuleFile)
 
   private def getAllFiles(path: String): Seq[File] = {
-    //TODO: @tailrec
-    def getTree(f: File): Stream[File] =
-      if (f.isDirectory) f.listFiles.toStream.flatMap(getTree)
-      else Stream(f)
+    @tailrec
+    def loop(toVisit: List[File], resultSoFar: List[File]): List[File] =
+      toVisit match {
+        case Nil => resultSoFar
+        case f :: fs if f.isDirectory => loop(f.listFiles.toList ::: fs, resultSoFar)
+        case f :: fs if !f.isDirectory => loop(fs, f :: resultSoFar)
+      }
 
-    getTree(new File(path))
+    loop(List(new File(path)), List())
   }
 
   private def isModuleFile(file: File): Boolean = {
