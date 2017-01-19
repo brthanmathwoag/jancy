@@ -58,9 +58,9 @@ object ClassGenerator {
     (OptionAliasMetadata(o.name, o.originalName) :: o.aliases.toList)
       .flatMap({ alias =>
 
-        val weaktypedSetter =
+        val stringSetter =
           Some(
-            WeaktypedSetter(
+            StringSetter(
               alias.name,
               alias.originalName,
               description,
@@ -68,10 +68,10 @@ object ClassGenerator {
 
         val boolValues = o.choices.flatMap(pickBoolValues)
 
-        val enumBackedSetter = o.choices
+        val enumSetter = o.choices
           .filter({ cs => boolValues.isEmpty })
           .map({ cs =>
-            EnumBackedSetter(
+            EnumSetter(
               alias.name,
               alias.originalName,
               description,
@@ -79,8 +79,8 @@ object ClassGenerator {
               cs.name)
           })
 
-        val boolBackedSetter = boolValues.map({ case (trueValue, falseValue) =>
-          BoolBackedSetter(
+        val boolSetter = boolValues.map({ case (trueValue, falseValue) =>
+          BoolSetter(
             alias.name,
             alias.originalName,
             description,
@@ -90,7 +90,7 @@ object ClassGenerator {
           )
         })
 
-        List(weaktypedSetter, enumBackedSetter, boolBackedSetter)
+        List(stringSetter, enumSetter, boolSetter)
           .collect({ case Some(s) => s })
     })
   }
@@ -179,18 +179,16 @@ object ClassGenerator {
     isFreeform: Boolean
   )
 
-  private case class WeaktypedSetter(
+  private case class StringSetter(
     override val name: String,
     override val originalName: String,
     override val javadoc: String,
     override val className: String
   ) extends HandlebarsSetter(
     name, originalName, javadoc, className
-  ) {
-    val isWeaktyped: Boolean = true
-  }
+  )
 
-  private case class EnumBackedSetter(
+  private case class EnumSetter(
     override val name: String,
     override val originalName: String,
     override val javadoc: String,
@@ -198,11 +196,9 @@ object ClassGenerator {
     typeName: String
   ) extends HandlebarsSetter(
     name, originalName, javadoc, className
-  ) {
-    val isEnumBacked: Boolean = true
-  }
+  )
 
-  private case class BoolBackedSetter(
+  private case class BoolSetter(
     override val name: String,
     override val originalName: String,
     override val javadoc: String,
@@ -211,16 +207,16 @@ object ClassGenerator {
     falseValue: String
   ) extends HandlebarsSetter(
     name, originalName, javadoc, className
-  ) {
-    val isBoolBacked: Boolean = true
-  }
+  )
 
   private class HandlebarsSetter(
     val name: String,
     val originalName: String,
     val javadoc: String,
     val className: String
-  )
+  ) {
+    val setterType = getClass.getSimpleName
+  }
 
   private case class HandlebarsModifier(
     name: String,

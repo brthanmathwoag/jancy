@@ -19,7 +19,7 @@ public class {{ name }} extends Action {
         return "{{ originalName }}";
     }
     {{# each options }}
-{{#if isWeaktyped }}{{> WeaktypedSetter }}{{/if}}{{#if isBoolBacked }}{{> BoolSetter }}{{/if}}{{#if isEnumBacked }}{{> EnumSetter }}{{/if}}
+{{> (lookup setterType) }}
     {{/ each }}
     {{# each choices }}
     public enum {{ name }} {
