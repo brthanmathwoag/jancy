@@ -139,4 +139,16 @@ public abstract class Tasklike<T extends Tasklike> {
     public T tags(Object... value) {
         return build(withArgument("tags", value), this.action);
     }
+
+    public T changedWhen(String value) {
+        return build(withArgument("changed_when", value), this.action);
+    }
+
+    public T failedWhen(String value) {
+        return build(withArgument("failed_when", value), this.action);
+    }
+
+    public T ignoreErrors(boolean value) {
+        return build(withArgument("ignore_errors", value ? "yes" : "no"), this.action);
+    }
 }

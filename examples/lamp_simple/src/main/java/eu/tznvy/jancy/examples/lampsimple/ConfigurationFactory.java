@@ -79,7 +79,7 @@ public class ConfigurationFactory implements eu.tznvy.jancy.core.ConfigurationFa
                 new Task("Test to see if selinux is running")
                     .action(new Command("getenforce"))
                     .register("sestatus")
-                    //.changedWhen("false")
+                    .changedWhen("false")
             );
 
         Role web = new Role("web")
