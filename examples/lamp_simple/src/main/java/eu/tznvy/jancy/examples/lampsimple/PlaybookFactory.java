@@ -5,7 +5,6 @@ import eu.tznvy.jancy.core.*;
 import eu.tznvy.jancy.modules.commands.Command;
 import eu.tznvy.jancy.modules.database.mysql.MysqlDb;
 import eu.tznvy.jancy.modules.database.mysql.MysqlUser;
-import eu.tznvy.jancy.modules.files.Acl;
 import eu.tznvy.jancy.modules.files.Lineinfile;
 import eu.tznvy.jancy.modules.files.Template;
 import eu.tznvy.jancy.modules.packaging.os.Yum;
@@ -15,9 +14,9 @@ import eu.tznvy.jancy.modules.system.Service;
 
 import java.util.HashMap;
 
-public class ConfigurationFactory implements eu.tznvy.jancy.core.ConfigurationFactory {
+public class PlaybookFactory implements eu.tznvy.jancy.core.PlaybookFactory {
     @Override
-    public Configuration build() {
+    public Playbook build() {
         Group webservers = new Group("webservers")
                 .hosts(new Host("web3"));
 
@@ -177,27 +176,27 @@ public class ConfigurationFactory implements eu.tznvy.jancy.core.ConfigurationFa
                         .state(MysqlUser.State.PRESENT))
             );
 
-        Playbook commonPlay = new Playbook("apply common configuration to all nodes")
+        Play commonPlay = new Play("apply common configuration to all nodes")
             .hosts(new Host("all"))
             .roles(common)
             //.remoteUser("root")
         ;
 
-        Playbook webPlay = new Playbook("configure and deploy the webservers and application code")
+        Play webPlay = new Play("configure and deploy the webservers and application code")
             .hosts(webservers)
             .roles(web)
             //.remoteUser("root")
         ;
 
-        Playbook dbPlay = new Playbook("deploy MySQL and configure the databases")
+        Play dbPlay = new Play("deploy MySQL and configure the databases")
             .hosts(dbservers)
             .roles(db)
             //.remoteUser("root")
         ;
 
-        return new Configuration("lamp_simple")
+        return new Playbook("lamp_simple")
             .inventories(inventory)
             .roles(common, web, db)
-            .playbooks(commonPlay, webPlay, dbPlay);
+            .plays(commonPlay, webPlay, dbPlay);
     }
 }

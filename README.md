@@ -73,23 +73,23 @@ resolvers += "jancy snapshots" at "https://jancy.tznvy.eu/m2"
 libraryDependencies += "eu.tznvy" % "jancy-common" % "0.1.0-SNAPSHOT"
 ```
 
-Create a class implementing the `ConfigurationFactory` interface from `jancy-common-*.jar`:
+Create a class implementing the `PlaybookFactory` interface from `jancy-common-*.jar`:
 
 ```java
 import eu.tznvy.jancy.core.*;
 import eu.tznvy.jancy.modules.system.Ping;
 
-public class HelloWorldConfigurationFactory implements ConfigurationFactory {
+public class HelloWorldPlaybookFactory implements PlaybookFactory {
     @Override
-    public Configuration build() {
+    public Playbook build() {
         Host localhost = new Host("localhost");
 
-        return new Configuration("HelloWorld")
+        return new Playbook("HelloWorld")
             .inventories(
                 new Inventory("inventory")
                     .hosts(localhost))
-            .playbooks(
-                new Playbook("Preflight check")
+            .plays(
+                new Play("Preflight check")
                     .hosts(localhost)
                     .tasks(
                         new Task("Test connection")
@@ -104,7 +104,7 @@ Package your class in a jar with `jancy-common-*.jar` and other dependencies, th
 ./jancy --jar yourjar.jar --output ./
 ```
 
-jancy will look for ConfigurationFactories in your jar and create a directory with Ansible configuration for each
+jancy will look for PlaybookFactories in your jar and create a directory with Ansible configuration for each
 one.
 
 ```bash

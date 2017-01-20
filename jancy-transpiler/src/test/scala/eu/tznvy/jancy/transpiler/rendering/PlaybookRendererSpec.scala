@@ -1,172 +1,183 @@
 package eu.tznvy.jancy.transpiler.rendering
 
-import eu.tznvy.jancy.core.{Group, Host, Playbook, Role}
-import eu.tznvy.jancy.modules.files.Copy
-import eu.tznvy.jancy.modules.packaging.os.Apt
-import eu.tznvy.jancy.modules.system.Service
-import org.scalatest.FunSpec
+import java.nio.file.Paths
 
+import scala.collection.JavaConverters._
+import org.scalatest.FunSpec
+import eu.tznvy.jancy.core._
 
 class PlaybookRendererSpec extends FunSpec {
-
   describe("The PlaybookRenderer") {
+    it("should render inventories to files named after the inventory") {
 
-    it("should render task name as first key") {
+      val playbook = new Playbook("c1")
+        .inventories(
+          new Inventory("production").hosts(new Host("h1")),
+          new Inventory("stage").hosts(new Host("h2")),
+          new Inventory("dev").hosts(new Host("h3")))
 
-      val expected =
-        """name: webservers
-          |hosts:
-          |- web01
-          |- web-amazon-us
-          |- web-amazon-eu
-          |""".stripMargin
+      val filesystem = new InMemoryFilesystem
+      val playbookRenderer = new PlaybookRenderer(filesystem)
+      playbookRenderer.render(playbook, Paths.get("/c1"))
 
-      val input = new Playbook("webservers")
-        .hosts(
-          new Host("web01"),
-          new Group("web-amazon-us"),
-          new Group("web-amazon-eu")
+      Seq("production", "stage", "dev")
+        .map(Paths.get("/", "c1", _))
+        .foreach({ p =>
+          assert(filesystem.testPath(p))
+          assert(filesystem.readFile(p).map(_.length).getOrElse(0) > 0)
+        })
+    }
+
+    it("should render plays in /site.yml file") {
+
+      val playbook = new Playbook("c1")
+        .plays(
+          new Play("p1"),
+          new Play("p2"),
+          new Play("p3")
         )
 
-      val actual = PlaybookRenderer.render(input)
+      val filesystem = new InMemoryFilesystem
+      val playbookRenderer = new PlaybookRenderer(filesystem)
+      playbookRenderer.render(playbook, Paths.get("/c1"))
 
-      assertResult (expected) { actual }
+      val expectedPath = Paths.get("/c1/site.yml")
+      assert(filesystem.testPath(expectedPath))
+      assert(filesystem.readFile(expectedPath).map(_.length).getOrElse(0) > 0)
     }
 
-    it("should render keys alphabetically") {
+    it("should render host vars in /host_vars/$host_name") {
 
-      val expected =
-        """name: webservers
-          |hosts:
-          |- web01
-          |- web-amazon-us
-          |- web-amazon-eu
-          |roles:
-          |- common
-          |- site01
-          |- site02
-          |""".stripMargin
+      val playbook = new Playbook("c1")
+          .inventories(
+            new Inventory("inventory")
+              .hosts(
+                new Host("h1")
+                  .vars(Map[String, AnyRef]("foo" -> "bar").asJava)
+          )
+        )
 
-      val input = new Playbook("webservers")
-        .hosts(
-          new Host("web01"),
-          new Group("web-amazon-us"),
-          new Group("web-amazon-eu")
-        ).roles(
-        new Role("common"),
-        new Role("site01"),
-        new Role("site02")
-      )
+      val filesystem = new InMemoryFilesystem
+      val playbookRenderer = new PlaybookRenderer(filesystem)
+      playbookRenderer.render(playbook, Paths.get("/c1"))
 
-      val actual = PlaybookRenderer.render(input)
-
-      assertResult (expected) { actual }
+      val expectedPath = Paths.get("/c1/host_vars/h1")
+      assert(filesystem.testPath(expectedPath))
+      assert(filesystem.readFile(expectedPath).map(_.length).getOrElse(0) > 0)
     }
 
-    it("should omit keys with empty collections") {
+    it("should not render host vars if a host does not have any") {
 
-      val expected =
-        """name: webservers
-          |roles:
-          |- common
-          |- site01
-          |- site02
-          |""".stripMargin
+      val playbook = new Playbook("c1")
+        .inventories(
+          new Inventory("inventory")
+            .hosts(
+              new Host("h1")
+                .vars(Map[String, AnyRef]("foo" -> "bar").asJava),
+              new Host("h2")
+            )
+        )
 
-      val input = new Playbook("webservers")
-        .roles(
-          new Role("common"),
-          new Role("site01"),
-          new Role("site02"))
-        .hosts()
-        .tasks()
-        .handlers()
+      val filesystem = new InMemoryFilesystem
+      val playbookRenderer = new PlaybookRenderer(filesystem)
+      playbookRenderer.render(playbook, Paths.get("/c1"))
 
-      val actual = PlaybookRenderer.render(input)
-
-      assertResult (expected) { actual }
+      val expectedPath = Paths.get("/c1/host_vars/h2")
+      assert(!filesystem.testPath(expectedPath))
     }
 
-    it("should render tasks and handlers inline") {
+    it("should not create host_vars directory if there are none") {
 
-      val expected =
-        """name: webservers
-          |handlers:
-          |- name: Reload httpd
-          |  service: |-
-          |    name='apache2'
-          |    state='reloaded'
-          |hosts:
-          |- web01
-          |- web02
-          |tasks:
-          |- name: Install httpd
-          |  apt: |-
-          |    name='apache2'
-          |    state='installed'
-          |- name: Upload httpd config
-          |  copy: |-
-          |    dest='/etc/apache2'
-          |    src='etc/apache2'
-          |  notify: Reload httpd
-          |""".stripMargin
+      val playbook = new Playbook("c1")
+        .inventories(
+          new Inventory("inventory")
+            .hosts(
+              new Host("h1"),
+              new Host("h2")
+            )
+        )
 
-      val input = new Playbook("webservers")
-        .hosts(
-          new Host("web01"),
-          new Host("web02"))
-        .tasks(
-          new Apt()
-            .name("apache2")
-            .state("installed")
-            .toTask("Install httpd"),
-          new Copy()
-            .src("etc/apache2")
-            .dest("/etc/apache2")
-            .toTask("Upload httpd config")
-            .notify("Reload httpd"))
-        .handlers(
-          new Service()
-            .name("apache2")
-            .state("reloaded")
-            .toHandler("Reload httpd"))
+      val filesystem = new InMemoryFilesystem
+      val playbookRenderer = new PlaybookRenderer(filesystem)
+      playbookRenderer.render(playbook, Paths.get("/c1"))
 
-      val actual = PlaybookRenderer.render(input)
-
-      assertResult (expected) { actual }
+      val expectedPath = Paths.get("/c1/host_vars")
+      assert(!filesystem.testPath(expectedPath))
     }
 
-    it("should render single-element hosts arrays as strings") {
+    it("should render group vars in /group_vars/$group_name") {
 
-      val expected =
-        """name: webservers
-          |hosts: web-01
-          |""".stripMargin
+      val playbook = new Playbook("c1")
+        .inventories(
+          new Inventory("inventory")
+            .groups(
+              new Group("g1")
+                .vars(Map[String, AnyRef]("foo" -> "bar").asJava)
+            )
+        )
 
-      val input = new Playbook("webservers")
-        .hosts(new Host("web-01"))
+      val filesystem = new InMemoryFilesystem
+      val playbookRenderer = new PlaybookRenderer(filesystem)
+      playbookRenderer.render(playbook, Paths.get("/c1"))
 
-      val actual = PlaybookRenderer.render(input)
-
-      assertResult (expected) { actual }
+      val expectedPath = Paths.get("/c1/group_vars/g1")
+      assert(filesystem.testPath(expectedPath))
+      assert(filesystem.readFile(expectedPath).map(_.length).getOrElse(0) > 0)
     }
 
-    it("should render roles as a list regardless of its length") {
+    it("should not render group vars if a group does not have any") {
 
-      val expected =
-        """name: webservers
-          |roles:
-          |- web
-          |""".stripMargin
+      val playbook = new Playbook("c1")
+        .inventories(
+          new Inventory("inventory")
+            .groups(
+              new Group("g1")
+                .vars(Map[String, AnyRef]("foo" -> "bar").asJava),
+              new Group("g2")
+            )
+        )
 
-      val input = new Playbook("webservers")
-        .roles(new Role("web"))
+      val filesystem = new InMemoryFilesystem
+      val playbookRenderer = new PlaybookRenderer(filesystem)
+      playbookRenderer.render(playbook, Paths.get("/c1"))
 
-      val actual = PlaybookRenderer.render(input)
-
-      assertResult (expected) { actual }
+      val expectedPath = Paths.get("/c1/group_vars/g2")
+      assert(!filesystem.testPath(expectedPath))
     }
 
+    it("should not create group_vars directory if there are none") {
+
+      val playbook = new Playbook("c1")
+        .inventories(
+          new Inventory("inventory")
+            .groups(
+              new Group("g1"),
+              new Group("g2")
+            )
+        )
+
+      val filesystem = new InMemoryFilesystem
+      val playbookRenderer = new PlaybookRenderer(filesystem)
+      playbookRenderer.render(playbook, Paths.get("/c1"))
+
+      val expectedPath = Paths.get("/c1/group_vars")
+      assert(!filesystem.testPath(expectedPath))
+    }
+
+    it("should render inventory vars in /group_vars/all") {
+
+      val playbook = new Playbook("c1")
+        .inventories(
+          new Inventory("inventory")
+            .vars(Map[String, AnyRef]("foo" -> "bar").asJava)
+        )
+
+      val filesystem = new InMemoryFilesystem
+      val playbookRenderer = new PlaybookRenderer(filesystem)
+      playbookRenderer.render(playbook, Paths.get("/c1"))
+
+      val expectedPath = Paths.get("/c1/group_vars/all")
+      assert(filesystem.testPath(expectedPath))
+    }
   }
 }
-

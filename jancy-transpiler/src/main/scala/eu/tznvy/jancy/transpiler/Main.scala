@@ -3,9 +3,9 @@ package eu.tznvy.jancy.transpiler
 import java.nio.file.Paths
 
 import eu.tznvy.jancy.transpiler.argparsing.{ArgsParser, PrintUsageArgs, PrintVersionArgs, TranspileArgs}
-import eu.tznvy.jancy.transpiler.discovery.{ConfigurationFactoriesDiscoverer, ContentFilesDiscoverer, ContentFilesExtractor}
+import eu.tznvy.jancy.transpiler.discovery.{PlaybookFactoriesDiscoverer, ContentFilesDiscoverer, ContentFilesExtractor}
 import eu.tznvy.jancy.transpiler.helpers.ConcreteFilesystem
-import eu.tznvy.jancy.transpiler.rendering.ConfigurationRenderer
+import eu.tznvy.jancy.transpiler.rendering.PlaybookRenderer
 
 object Main {
   private val executableName = "jancy"
@@ -25,25 +25,25 @@ object Main {
 
   def transpile(args: TranspileArgs): Boolean = {
     val filesystem = new ConcreteFilesystem()
-    val configurationRenderer = new ConfigurationRenderer(filesystem)
+    val playbookRenderer = new PlaybookRenderer(filesystem)
     val contentFilesExtractor = new ContentFilesExtractor(filesystem)
 
-    val foundConfigurations =
-      ConfigurationFactoriesDiscoverer
-        .getConfigurationFactoriesInJar(args.jar)
-        .map({ cf =>
-          val configuration = cf.build
-          val outputPath = Paths.get(args.output.getPath, configuration.getName)
-          val contentFiles = ContentFilesDiscoverer.discover(args.jar, configuration.getName)
-          (configuration, outputPath, contentFiles)
+    val foundPlaybooks =
+      PlaybookFactoriesDiscoverer
+        .getPlaybookFactoriesInJar(args.jar)
+        .map({ pbf =>
+          val playbook = pbf.build
+          val outputPath = Paths.get(args.output.getPath, playbook.getName)
+          val contentFiles = ContentFilesDiscoverer.discover(args.jar, playbook.getName)
+          (playbook, outputPath, contentFiles)
         })
 
-    if (foundConfigurations.isEmpty) {
-      throw new Error("No ConfigurationFactory implementations found in the jar.")
+    if (foundPlaybooks.isEmpty) {
+      throw new Error("No PlaybookFactory implementations found in the jar.")
     }
 
-    foundConfigurations.foreach({ case (configuration, outputPath, contentFiles) =>
-      configurationRenderer.render(configuration, outputPath)
+    foundPlaybooks.foreach({ case (playbook, outputPath, contentFiles) =>
+      playbookRenderer.render(playbook, outputPath)
       contentFilesExtractor.extract(contentFiles, args.jar, outputPath)
     })
 
