@@ -112,21 +112,57 @@ cd HelloWorld
 ansible-playbook -i inventory site.yml
 ```
 
+For an overview of available features, see [Configuration Concepts page](https://jancy.tznvy.eu/concepts).
+
 ## Examples
+
+Browse the examples [here](https://github.com/brthanmathwoag/jancy/tree/master/examples)
 
 ```bash
 # make sure the transpiler is built
-./sbt jancyTranspiler/assembly
+$ ./sbt jancyTranspiler/assembly
 
 # assemble jars for example playbooks
-./sbt examples/assembly
+$ ./sbt examples/assembly
 
 # generate playbook from the jar
-jancy-transpiler/target/scala-2.12/jancy \
+$ jancy-transpiler/target/scala-2.12/jancy \
     --jar examples/lamp_simple/target/lampSimpleExample*.jar \
     --output /tmp/
 
+$ cd /tmp/lamp_simple/
+$ tree
+.
+└── lamp_simple
+    ├── group_vars
+    │   ├── all
+    │   └── dbservers
+    ├── hosts
+    ├── roles
+    │   ├── common
+    │   │   ├── handlers
+    │   │   │   └── main.yml
+    │   │   ├── tasks
+    │   │   │   └── main.yml
+    │   │   └── templates
+    │   │       └── ntp.conf.j2
+    │   ├── db
+    │   │   ├── handlers
+    │   │   │   └── main.yml
+    │   │   ├── tasks
+    │   │   │   └── main.yml
+    │   │   └── templates
+    │   │       └── my.cnf.j2
+    │   └── web
+    │       ├── handlers
+    │       │   └── main.yml
+    │       ├── tasks
+    │       │   └── main.yml
+    │       └── templates
+    │           └── index.php.j2
+    └── site.yml
+15 directories, 13 files
+
 # run the playbook
-cd /tmp/lamp_simple/
-ansible-playbook -i hosts site.yml
+$ ansible-playbook -i hosts site.yml
 ```
