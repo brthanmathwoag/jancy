@@ -5,6 +5,7 @@ import java.nio.file.Paths
 import scala.collection.JavaConverters._
 import org.scalatest.FunSpec
 import eu.tznvy.jancy.core._
+import eu.tznvy.jancy.modules.system.Ping
 
 class PlaybookRendererSpec extends FunSpec {
   describe("The PlaybookRenderer") {
@@ -178,6 +179,35 @@ class PlaybookRendererSpec extends FunSpec {
 
       val expectedPath = Paths.get("/c1/group_vars/all")
       assert(filesystem.testPath(expectedPath))
+    }
+
+    it("should render roles to directories named after the role") {
+
+      val playbook = new Playbook("c1")
+        .roles(
+          new Role("common")
+            .tasks(
+              new Task("do this").action(new Ping)
+            ),
+          new Role("backend")
+            .tasks(
+              new Task("do that").action(new Ping)
+            ),
+          new Role("frontend")
+            .tasks(
+              new Task("do something else").action(new Ping)
+            )
+      )
+
+      val filesystem = new InMemoryFilesystem
+      val playbookRenderer = new PlaybookRenderer(filesystem)
+      playbookRenderer.render(playbook, Paths.get("/c1"))
+
+      Seq("common", "backend", "frontend")
+        .map(Paths.get("/", "c1", "roles", _))
+        .foreach({ p =>
+          assert(filesystem.testPath(p))
+        })
     }
   }
 }
