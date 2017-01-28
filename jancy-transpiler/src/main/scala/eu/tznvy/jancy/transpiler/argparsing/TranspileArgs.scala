@@ -9,8 +9,10 @@ import java.io.File
   * @param jar        the jar with PlaybookFactory implementations
   * @param output     the target directory. Current working directory if not
   *                   specified.
+  * @param classname  the name of a particular PlaybookFactory the user wants to use
   */
 case class TranspileArgs (
   jar: File,
-  output: File
+  output: File,
+  classname: Option[String]
 ) extends Args

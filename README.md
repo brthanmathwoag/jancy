@@ -29,15 +29,19 @@ this repository and it will install the current version of sbt if it cannot be f
 
 ```bash
 $ jancy
-usage: jancy -j /path/to/configuration.jar
+usage: jancy -j /path/to/configuration.jar [-o /output/path/] [-c
+             com.example.Class]
+ -c,--class <com.example.Class>          The name of the PlaybookFactory
+                                         implementation to be transpiled.
+                                         If not set, all PlaybookFactories
+                                         in the jar will be used.
  -h,--help                               Prints usage information and
                                          exits.
  -j,--jar </path/to/configuration.jar>   The path to a jar file containing
-                                         the configuration.
+                                         the playbooks.
  -o,--output </output/path/>             The directory where the ansible
-                                         configuration will be
-                                         saved.Defaults to current
-                                         directory.
+                                         configuration will be saved.
+                                         Defaults to current directory.
  -v,--version                            Prints version information and
                                          exits.
 ```

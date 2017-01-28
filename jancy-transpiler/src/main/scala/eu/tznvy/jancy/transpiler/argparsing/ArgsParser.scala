@@ -16,6 +16,11 @@ class ArgsParser(executableName: String) {
   private val outputArgKey = "o"
   private val versionArgKey = "v"
   private val helpArgKey = "h"
+  private val classnameArgKey = "c"
+
+  private val examplePlaybookPath = "/path/to/configuration.jar"
+  private val exampleOutputPath = "/output/path/"
+  private val exampleClassname = "com.example.Class"
   
   def tryParse(args: Array[String]): scala.Option[Args] = {
     val parser = new DefaultParser()
@@ -25,7 +30,7 @@ class ArgsParser(executableName: String) {
     } match {
       case Success(a) => Some(a)
       case Failure(e) => {
-        printUsage( e)
+        printUsage(e)
         None
       }
     }
@@ -52,7 +57,11 @@ class ArgsParser(executableName: String) {
             new File(
               scala.Option(commandLine
                 .getOptionValue(outputArgKey))
-                .getOrElse(defaultOutput))))
+                .getOrElse(defaultOutput)),
+              scala.Option(commandLine
+                .getOptionValue(classnameArgKey))
+          )
+        )
       else None
   }
 
@@ -70,7 +79,7 @@ class ArgsParser(executableName: String) {
   def printUsage(): Unit = {
     val formatter = new HelpFormatter()
     formatter.printHelp(
-      s"$executableName -$jarArgKey /path/to/configuration.jar",
+      s"$executableName -$jarArgKey $examplePlaybookPath [-$outputArgKey $exampleOutputPath] [-$classnameArgKey $exampleClassname]",
       options)
   }
 
@@ -81,19 +90,29 @@ class ArgsParser(executableName: String) {
       Option
         .builder(jarArgKey)
         .longOpt("jar")
-        .desc("The path to a jar file containing the configuration.")
+        .desc("The path to a jar file containing the playbooks.")
         .hasArg
-        .argName("/path/to/configuration.jar")
+        .argName(examplePlaybookPath)
         .build)
 
     options.addOption(
       Option
         .builder(outputArgKey)
         .longOpt("output")
-        .desc("The directory where the ansible configuration will be saved." +
+        .desc("The directory where the ansible configuration will be saved. " +
           "Defaults to current directory.")
         .hasArg
-        .argName("/output/path/")
+        .argName(exampleOutputPath)
+        .build)
+
+    options.addOption(
+      Option
+        .builder(classnameArgKey)
+        .longOpt("class")
+        .desc("The name of the PlaybookFactory implementation to be transpiled. " +
+          "If not set, all PlaybookFactories in the jar will be used.")
+        .hasArg
+        .argName(exampleClassname)
         .build)
 
     options.addOption(

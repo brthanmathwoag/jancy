@@ -1,9 +1,10 @@
 package eu.tznvy.jancy.transpiler
 
 import java.nio.file.Paths
+import resource._
 
 import eu.tznvy.jancy.transpiler.argparsing.{ArgsParser, PrintUsageArgs, PrintVersionArgs, TranspileArgs}
-import eu.tznvy.jancy.transpiler.discovery.{PlaybookFactoriesDiscoverer, ContentFilesDiscoverer, ContentFilesExtractor}
+import eu.tznvy.jancy.transpiler.discovery.{PlaybookFactoriesDiscoverer, ContentFilesDiscoverer, ContentFilesExtractor, JarClassSource}
 import eu.tznvy.jancy.transpiler.helpers.ConcreteFilesystem
 import eu.tznvy.jancy.transpiler.rendering.PlaybookRenderer
 
@@ -28,9 +29,24 @@ object Main {
     val playbookRenderer = new PlaybookRenderer(filesystem)
     val contentFilesExtractor = new ContentFilesExtractor(filesystem)
 
-    val foundPlaybooks =
-      PlaybookFactoriesDiscoverer
-        .getPlaybookFactoriesInJar(args.jar)
+    val playbookFactories =
+      managed(new JarClassSource(args.jar))
+        .map(PlaybookFactoriesDiscoverer.findPlaybookFactories(_, args.classname))
+        .opt
+        .get
+
+    if (playbookFactories.isEmpty) {
+      val errorMessage =
+        args
+          .classname
+          .map(_ + " not found or it does not implement PlaybookFactory interface.")
+          .getOrElse("No PlaybookFactory implementations found in the jar.")
+
+      throw new Error(errorMessage)
+    }
+
+    val playbooks =
+      playbookFactories
         .map({ pbf =>
           val playbook = pbf.build
           val outputPath = Paths.get(args.output.getPath, playbook.getName)
@@ -38,11 +54,7 @@ object Main {
           (playbook, outputPath, contentFiles)
         })
 
-    if (foundPlaybooks.isEmpty) {
-      throw new Error("No PlaybookFactory implementations found in the jar.")
-    }
-
-    foundPlaybooks.foreach({ case (playbook, outputPath, contentFiles) =>
+    playbooks.foreach({ case (playbook, outputPath, contentFiles) =>
       playbookRenderer.render(playbook, outputPath)
       contentFilesExtractor.extract(contentFiles, args.jar, outputPath)
     })
