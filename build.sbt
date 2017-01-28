@@ -1,3 +1,5 @@
+import UnidocKeys._
+
 lazy val commonSettings = Seq(
   organization := "eu.tznvy",
   version := "0.1.0-SNAPSHOT",
@@ -56,7 +58,9 @@ lazy val jancyCommon = project
     jancyCore
   )
   .settings(commonSettings: _*)
+  .settings(javaUnidocSettings: _*)
   .settings(
+    unidocProjectFilter in (JavaUnidoc, unidoc) := inProjects(jancyCore, jancyModules),
     name := "jancy-common",
     crossPaths := false,
     autoScalaLibrary := false,
