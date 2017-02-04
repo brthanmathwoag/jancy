@@ -1,5 +1,7 @@
 package eu.tznvy.jancy.modulesgen.discovery
 
+import java.util.regex.Pattern
+
 import scala.io.Source
 
 /**
@@ -14,16 +16,13 @@ object MetadataFilesDiscoverer {
     name.endsWith(".py")
 
   private def lineSuggestsItsAModule(line: String): Boolean =
-    containsModuleConstructorInvocation(line) || containsVirtualModuleHeader(line)
+    containsModuleConstructorInvocation(line) || containsDocumentation(line)
 
-  private val virtualModuleHeader =
-    "# this is a virtual module that is entirely implemented server side"
+  private val moduleConstructorInvocation = "module = AnsibleModule("
 
   private def containsModuleConstructorInvocation(line: String): Boolean =
     line.contains(moduleConstructorInvocation)
 
-  private val moduleConstructorInvocation = "module = AnsibleModule("
-
-  private def containsVirtualModuleHeader(line: String): Boolean =
-    line.startsWith(virtualModuleHeader)
+  private def containsDocumentation(line: String): Boolean =
+    Pattern.matches("^DOCUMENTATION\\s*=\\s*[ur]?['\"]{3}.*", line)
 }

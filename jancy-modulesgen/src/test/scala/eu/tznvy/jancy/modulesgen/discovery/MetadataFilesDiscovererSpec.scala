@@ -67,7 +67,7 @@ class MetadataFilesDiscovererSpec extends FunSpec {
       assertResult (true) { output }
     }
 
-    it("should look for 'a virtual module' annotation") {
+    it("should look for a DOCUMENTATION variable") {
 
       val filename = "a-test-module.py"
       val source = Source.fromString(

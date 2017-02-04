@@ -179,13 +179,18 @@ object MetadataReader {
       .replace("-", "_")
       //workaround for packaging.os.Urpmi
       .replace(":", "")
+      //workaround for DockerLogin
+      .replace(".", "_")
 
   private def escapeEndOfComment(s: String): String =
     //workaround for system.cron
     s.replace("*/", "*&#47;")
 
   private def escapeJavaKeywords(name: String): String =
-    if (Set("public", "default", "interface", "private", "switch", "goto", "package", "if").contains(name)) name + "_"
+    if (Set(
+      "public", "default", "interface", "private", "switch", "goto", "package",
+      "if", "static"
+    ).contains(name)) name + "_"
     else name
 
   private def resolveDescription(maybeNode: Option[Any]): Option[String] =
