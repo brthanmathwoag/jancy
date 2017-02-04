@@ -151,4 +151,16 @@ public abstract class Tasklike<T extends Tasklike> {
     public T ignoreErrors(boolean value) {
         return build(withArgument("ignore_errors", value ? "yes" : "no"), this.action);
     }
+
+    public T delegateTo(String value) {
+        return build(withArgument("delegate_to", value), this.action);
+    }
+
+    public T delegateFacts(boolean value) {
+        return build(withArgument("delegate_facts", value ? "yes" : "no"), this.action);
+    }
+
+    public T runOnce(boolean value) {
+        return build(withArgument("run_once", value ? "yes" : "no"), this.action);
+    }
 }
