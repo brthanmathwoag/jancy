@@ -209,5 +209,51 @@ class PlaybookRendererSpec extends FunSpec {
           assert(filesystem.testPath(p))
         })
     }
+
+    it("should render host vars even if the host is mentioned only via a group") {
+
+      val playbook = new Playbook("site")
+          .inventories(
+            new Inventory("inventory")
+                .groups(
+                  new Group("g1")
+                      .hosts(
+                        new Host("h1")
+                            .vars(Map[String, AnyRef]("foo" -> "bar").asJava)
+                      )
+                )
+          )
+
+      val filesystem = new InMemoryFilesystem
+      val playbookRenderer = new PlaybookRenderer(filesystem)
+      playbookRenderer.render(playbook, Paths.get("/site"))
+
+      val expectedPath = Paths.get("/site/host_vars/h1")
+      assert(filesystem.testPath(expectedPath))
+      assert(filesystem.readFile(expectedPath).map(_.length).getOrElse(0) > 0)
+    }
+
+    it("should render vars for subgroups") {
+
+    val playbook = new Playbook("site")
+        .inventories(
+          new Inventory("inventory")
+            .groups(
+              new Group("g1")
+                  .subgroups(
+                  new Group("g2")
+                    .vars(Map[String, AnyRef]("foo" -> "bar").asJava)
+                )
+            )
+        )
+
+      val filesystem = new InMemoryFilesystem
+      val playbookRenderer = new PlaybookRenderer(filesystem)
+      playbookRenderer.render(playbook, Paths.get("/site"))
+
+      val expectedPath = Paths.get("/site/group_vars/g2")
+      assert(filesystem.testPath(expectedPath))
+      assert(filesystem.readFile(expectedPath).map(_.length).getOrElse(0) > 0)
+    }
   }
 }

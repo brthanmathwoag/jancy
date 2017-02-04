@@ -5,7 +5,7 @@ import java.util
 
 import scala.collection.JavaConverters._
 import eu.tznvy.jancy.core.{Playbook, Inventory, Play, Role}
-import eu.tznvy.jancy.transpiler.helpers.Filesystem
+import eu.tznvy.jancy.transpiler.helpers.{ Filesystem, GroupsHelper }
 
 /**
   * Creates YAML representation of Playbooks on the provided filesystem
@@ -27,21 +27,32 @@ class PlaybookRenderer(filesystem: Filesystem) {
       root.resolve("host_vars"),
       playbook
         .getInventories
-        .flatMap(_.getHosts)
-        .map({ h => (h.getName, h.getVars) }))
+        .flatMap({ i =>
+          val hostsInGroups =
+            GroupsHelper
+              .flattenSubgroups(i.getGroups)
+              .flatMap(_.getHosts)
+          i.getHosts ++ hostsInGroups
+        })
+        .groupBy(_.getName)
+        .toArray
+        .map({ g => (g._1, g._2.flatMap(_.getVars.asScala.toSet).toMap) })
+    )
+
+    saveVars(
+      root.resolve("group_vars"),
+      GroupsHelper.flattenSubgroups(
+        playbook
+          .getInventories
+          .flatMap(_.getGroups))
+        .toArray
+        .map({ g => (g.getName, g.getVars.asScala.toMap) }))
 
     saveVars(
       root.resolve("group_vars"),
       playbook
         .getInventories
-        .flatMap(_.getGroups)
-        .map({ g => (g.getName, g.getVars) }))
-
-    saveVars(
-      root.resolve("group_vars"),
-      playbook
-        .getInventories
-        .map({ i => ("all", i.getVars )}))
+        .map({ i => ("all", i.getVars.asScala.toMap) }))
 
     filesystem.writeFile(
       makeMainPlaybookPath(root),
@@ -65,12 +76,12 @@ class PlaybookRenderer(filesystem: Filesystem) {
   private def makeRolePath(root: Path, role: Role): Path =
     root.resolve("roles").resolve(role.getName)
 
-  private def saveVars(rootPath: Path, vars: Array[(String, util.Map[String, AnyRef])]): Unit = {
+  private def saveVars(rootPath: Path, vars: Array[(String, Map[String, AnyRef])]): Unit = {
     vars
       .groupBy({ p => p._1 })
       .map({ g =>
         val pairs = g._2
-          .flatMap({ p => p._2.asScala.toSeq })
+          .flatMap({ p => p._2.toSeq })
           .toArray[(String, Any)]
         val content = VarsRenderer.renderAll(pairs)
         val path = rootPath.resolve(g._1)
