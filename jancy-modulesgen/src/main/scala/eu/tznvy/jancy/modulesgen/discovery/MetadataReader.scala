@@ -24,11 +24,11 @@ object MetadataReader {
     val className = CapitalizationHelper.snakeCaseToPascalCase(name)
     val description = resolveDescription(navigate[String](documentation, List("description")))
     val shortDescription = resolveDescription(navigate[String](documentation, List("short_description")))
-    val areCommonArgsEnabled = checkIfFileCommonArgsAreEnabled(file)
     val specialCase = SpecialCases.get(name)
+    val documentationFragments = resolveDocumentationFragments(documentation)
     val explicitOptions = readOptions(specialCase, documentation)
     val options =
-      if (areCommonArgsEnabled) mergeOptionsWithCommonArgs(explicitOptions)
+      if (documentationFragments.contains("files")) mergeOptionsWithCommonArgs(explicitOptions)
       else explicitOptions
 
     ModuleMetadata(
@@ -37,7 +37,8 @@ object MetadataReader {
       namespace,
       description,
       shortDescription,
-      options)
+      options,
+      documentationFragments)
   }
 
   private def readDocumentation(file: File): Any = {
@@ -203,17 +204,6 @@ object MetadataReader {
       case _ => None
     }
 
-  private def checkIfFileCommonArgsAreEnabled(file: File): Boolean = {
-    //TODO: don't do a second pass for this
-    val pattern = Pattern.compile(".*add_file_common_args\\s?=\\s?True.*")
-    managed(Source.fromFile(file))
-      .map(_
-        .getLines()
-        .exists(l => pattern.matcher(l).find))
-      .opt
-      .getOrElse(false)
-  }
-
   private def mergeOptionsWithCommonArgs(options: Seq[OptionMetadata]): Seq[OptionMetadata] = {
     val optionsMap = options
       .map({ o => (o.originalName, o) })
@@ -242,4 +232,14 @@ object MetadataReader {
           None,
           Seq())
       }).toMap
+
+  private def resolveDocumentationFragments(documentation: Any): Seq[String] =
+    navigate[Any](documentation, List("extends_documentation_fragment")) match {
+      case Some(v) => v match {
+        case f: String => Seq(f)
+        case fs: java.util.List[_] => fs.asScala.map(_.toString)
+        case _ => Seq[String]()
+      }
+      case _ => Seq[String]()
+    }
 }

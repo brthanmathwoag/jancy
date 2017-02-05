@@ -9,6 +9,7 @@ package eu.tznvy.jancy.modulesgen.model
   * @param description        long module description
   * @param shortDescription   short module description
   * @param options            module parameters' metadata
+  * @param documentationFragments   external documentation fragments to merge
   */
 case class ModuleMetadata(
   className: String,
@@ -16,5 +17,6 @@ case class ModuleMetadata(
   namespace: String,
   description: Option[String],
   shortDescription: Option[String],
-  options: Seq[OptionMetadata]
+  options: Seq[OptionMetadata],
+  documentationFragments: Seq[String]
 )
