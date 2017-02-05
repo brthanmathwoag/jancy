@@ -1,3 +1,3 @@
-# Simple LAMP stack deployment script
+# Simple LAMP playbook
 
-Based on a playbook from [ansible-examples](https://github.com/ansible/ansible-examples/tree/master/lamp_simple)
+Based on the playbook from [ansible-examples](https://github.com/ansible/ansible-examples/tree/master/lamp_simple)
