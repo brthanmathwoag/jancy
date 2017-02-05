@@ -33,6 +33,7 @@ class ClassGeneratorSpec extends FunSpec {
         Some(input),
         None,
         List(),
+        List(),
         List())
 
       val content = ClassGenerator.generateClass(module)
@@ -78,6 +79,7 @@ class ClassGeneratorSpec extends FunSpec {
             None,
             None,
             List())),
+        List(),
         List())
 
       val content = ClassGenerator.generateClass(module)
@@ -113,7 +115,35 @@ class ClassGeneratorSpec extends FunSpec {
             None,
             None,
             List())),
+        List(),
         List())
+
+      val content = ClassGenerator.generateClass(module)
+
+      val javadocs = findJavadocs(content)
+
+      assertResult (expected) { javadocs }
+    }
+
+    it ("should include authors of the module in the description, if provided") {
+
+      val expected = List(
+        """/**
+          | * Lorem ipsum dolor sit amet
+          | * <p>
+          | * Authors: author1, author2
+          | */""".stripMargin)
+
+      val module = ModuleMetadata(
+        "AModule",
+        "a_module",
+        "test",
+        Some("Lorem ipsum dolor sit amet"),
+        None,
+        List(),
+        List(),
+        List("author1", "author2")
+      )
 
       val content = ClassGenerator.generateClass(module)
 

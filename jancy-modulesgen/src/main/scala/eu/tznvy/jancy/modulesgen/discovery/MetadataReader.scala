@@ -25,7 +25,8 @@ object MetadataReader {
     val description = resolveDescription(navigate[String](documentation, List("description")))
     val shortDescription = resolveDescription(navigate[String](documentation, List("short_description")))
     val specialCase = SpecialCases.get(name)
-    val documentationFragments = resolveDocumentationFragments(documentation)
+    val documentationFragments = castAsSeq(navigate[Any](documentation, List("extends_documentation_fragment")))
+    val authors = castAsSeq(navigate[Any](documentation, List("author")))
     val explicitOptions = readOptions(specialCase, documentation)
     val options =
       if (documentationFragments.contains("files")) mergeOptionsWithCommonArgs(explicitOptions)
@@ -38,7 +39,8 @@ object MetadataReader {
       description,
       shortDescription,
       options,
-      documentationFragments)
+      documentationFragments,
+      authors)
   }
 
   private def readDocumentation(file: File): Any = {
@@ -233,11 +235,11 @@ object MetadataReader {
           Seq())
       }).toMap
 
-  private def resolveDocumentationFragments(documentation: Any): Seq[String] =
-    navigate[Any](documentation, List("extends_documentation_fragment")) match {
+  private def castAsSeq(maybeNode: Option[Any]): Seq[String] =
+    maybeNode match {
       case Some(v) => v match {
-        case f: String => Seq(f)
-        case fs: java.util.List[_] => fs.asScala.map(_.toString)
+        case one: String => Seq(one)
+        case many: java.util.List[_] => many.asScala.map(_.toString)
         case _ => Seq[String]()
       }
       case _ => Seq[String]()

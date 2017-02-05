@@ -127,13 +127,21 @@ object ClassGenerator {
   private def getHandlebarsOptionDescription(o: OptionMetadata): String =
     o.description.getOrElse(s"This is a wrapper for ${o.originalName} parameter")
 
-  private def getHandlebarsModuleDescription(moduleMetadata: ModuleMetadata): String =
-    moduleMetadata
+  private def getHandlebarsModuleDescription(moduleMetadata: ModuleMetadata): String = {
+
+    val description = moduleMetadata
       .description
       .getOrElse(
         moduleMetadata
           .shortDescription
           .getOrElse(s"This is a wrapper for ${moduleMetadata.originalName} module"))
+
+    val authors =
+      if (moduleMetadata.authors.nonEmpty) "Authors: " + moduleMetadata.authors.mkString(", ")
+      else ""
+
+    Seq(description, authors).filter(_.nonEmpty).mkString("\n")
+  }
 
   private def formatJavadoc(text: String, isMemberJavadoc: Boolean): String = {
     val indentation = if (isMemberJavadoc) 4 else 0
