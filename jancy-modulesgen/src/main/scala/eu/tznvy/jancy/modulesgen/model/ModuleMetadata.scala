@@ -13,6 +13,7 @@ package eu.tznvy.jancy.modulesgen.model
   * @param authors            the authors of the original module
   * @param versionAdded       Ansible version in which the module was introduced
   * @param notes              additional notes
+  * @param deprecated         deprecation comment. Some("") if marked as deprecated but no comment provided
   */
 case class ModuleMetadata(
   className: String,
@@ -24,5 +25,6 @@ case class ModuleMetadata(
   documentationFragments: Seq[String],
   authors: Seq[String],
   versionAdded: Option[String],
-  notes: Seq[String]
+  notes: Seq[String],
+  deprecated: Option[String]
 )

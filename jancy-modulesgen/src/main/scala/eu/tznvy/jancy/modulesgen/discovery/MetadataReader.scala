@@ -33,6 +33,7 @@ object MetadataReader {
       else explicitOptions
     val versionAdded = navigate[Any](documentation, List("version_added")).map(_.toString).headOption
     val notes = castAsSeq(navigate[Any](documentation, List("notes")))
+    val deprecated = navigate[Any](documentation, List("deprecated")).map(_.toString).headOption
 
     ModuleMetadata(
       className,
@@ -44,7 +45,8 @@ object MetadataReader {
       documentationFragments,
       authors,
       versionAdded,
-      notes
+      notes,
+      deprecated
     )
   }
 

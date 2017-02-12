@@ -1,5 +1,7 @@
 package eu.tznvy.jancy.modulesgen.codegeneration
 
+import java.util.regex.Pattern
+
 import com.github.jknack.handlebars.context.FieldValueResolver
 import com.github.jknack.handlebars.{Context, Handlebars, Template}
 import com.github.jknack.handlebars.io.ClassPathTemplateLoader
@@ -9,6 +11,8 @@ import eu.tznvy.jancy.modulesgen.model.{Choices, ModuleMetadata, OptionAliasMeta
   * Generates wrapper source code based on ModuleMetadata via Handlebars
   */
 object ClassGenerator {
+
+  private lazy val deprecationPattern = Pattern.compile("deprecated", Pattern.CASE_INSENSITIVE)
 
   def generateClass(moduleMetadata: ModuleMetadata): String =
     template(createContext(moduleMetadata))
@@ -47,7 +51,8 @@ object ClassGenerator {
         .map(_.choices.get)
         .map(buildHandlebarsChoices)
         .toArray,
-      moduleMetadata.options.exists(_.originalName == "free_form")
+      moduleMetadata.options.exists(_.originalName == "free_form"),
+      moduleMetadata.deprecated.nonEmpty
     )
 
   private def buildHandlebarsSetters(className: String)(o: OptionMetadata): List[HandlebarsSetter] = {
@@ -57,6 +62,7 @@ object ClassGenerator {
 
     (OptionAliasMetadata(o.name, o.originalName) :: o.aliases.toList)
       .flatMap({ alias =>
+        val isDeprecated = o.description.exists({ d => deprecationPattern.matcher(d).find })
 
         val stringSetter =
           Some(
@@ -64,7 +70,10 @@ object ClassGenerator {
               alias.name,
               alias.originalName,
               description,
-              className))
+              className,
+              isDeprecated
+            )
+          )
 
         val boolValues = o.choices.flatMap(pickBoolValues)
 
@@ -76,7 +85,9 @@ object ClassGenerator {
               alias.originalName,
               description,
               className,
-              cs.name)
+              isDeprecated,
+              cs.name
+            )
           })
 
         val boolSetter = boolValues.map({ case (trueValue, falseValue) =>
@@ -85,6 +96,7 @@ object ClassGenerator {
             alias.originalName,
             description,
             className,
+            isDeprecated,
             trueValue,
             falseValue
           )
@@ -124,8 +136,11 @@ object ClassGenerator {
       }).toArray
     )
 
-  private def getHandlebarsOptionDescription(o: OptionMetadata): String =
-    o.description.getOrElse(s"This is a wrapper for ${o.originalName} parameter")
+  private def getHandlebarsOptionDescription(o: OptionMetadata): String = {
+    val description = o.description.getOrElse(s"This is a wrapper for ${o.originalName} parameter")
+    val deprecated = if (deprecationPattern.matcher(description).find) "@deprecated" else ""
+    Seq(description, deprecated).filter(_.nonEmpty).mkString("\n")
+  }
 
   private def getHandlebarsModuleDescription(moduleMetadata: ModuleMetadata): String = {
 
@@ -144,7 +159,9 @@ object ClassGenerator {
 
     val notes = moduleMetadata.notes.mkString("\n")
 
-    Seq(description, notes, authors, versionAdded).filter(_.nonEmpty).mkString("\n")
+    val deprecated = moduleMetadata.deprecated.map("@deprecated " + _).getOrElse("")
+
+    Seq(description, notes, authors, versionAdded, deprecated).filter(_.nonEmpty).mkString("\n")
   }
 
   private def formatJavadoc(text: String, isMemberJavadoc: Boolean): String = {
@@ -188,16 +205,18 @@ object ClassGenerator {
     javadoc: String,
     options: Array[HandlebarsSetter],
     choices: Array[HandlebarsChoices],
-    isFreeform: Boolean
+    isFreeform: Boolean,
+    isDeprecated: Boolean
   )
 
   private case class StringSetter(
     override val name: String,
     override val originalName: String,
     override val javadoc: String,
-    override val className: String
+    override val className: String,
+    override val isDeprecated: Boolean
   ) extends HandlebarsSetter(
-    name, originalName, javadoc, className
+    name, originalName, javadoc, className, isDeprecated
   )
 
   private case class EnumSetter(
@@ -205,9 +224,10 @@ object ClassGenerator {
     override val originalName: String,
     override val javadoc: String,
     override val className: String,
+    override val isDeprecated: Boolean,
     typeName: String
   ) extends HandlebarsSetter(
-    name, originalName, javadoc, className
+    name, originalName, javadoc, className, isDeprecated
   )
 
   private case class BoolSetter(
@@ -215,17 +235,19 @@ object ClassGenerator {
     override val originalName: String,
     override val javadoc: String,
     override val className: String,
+    override val isDeprecated: Boolean,
     trueValue: String,
     falseValue: String
   ) extends HandlebarsSetter(
-    name, originalName, javadoc, className
+    name, originalName, javadoc, className, isDeprecated
   )
 
   private class HandlebarsSetter(
     val name: String,
     val originalName: String,
     val javadoc: String,
-    val className: String
+    val className: String,
+    val isDeprecated: Boolean
   ) {
     val setterType = getClass.getSimpleName
   }

@@ -4,7 +4,8 @@ import java.util.Map;
 
 import eu.tznvy.jancy.core.Action;
 
-{{{ javadoc }}}
+{{{ javadoc }}}{{# if isDeprecated }}
+@Deprecated{{/ if}}
 public class {{ name }} extends Action {
 
     public {{ name }}({{# if isFreeform}}String freeForm{{/ if}}) {

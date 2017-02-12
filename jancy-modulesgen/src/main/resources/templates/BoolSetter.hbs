@@ -1,4 +1,5 @@
-{{{ javadoc }}}
+{{{ javadoc }}}{{# if isDeprecated }}
+    @Deprecated{{/ if }}
     public {{ className }} {{ name }}(boolean {{ name }}) {
         return new {{ className }}(withArgument("{{ originalName }}", {{ name }} ? "{{ trueValue }}" : "{{ falseValue }}"));
     }

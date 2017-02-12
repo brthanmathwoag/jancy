@@ -36,7 +36,8 @@ class ClassGeneratorSpec extends FunSpec {
         List(),
         List(),
         None,
-        List()
+        List(),
+        None
       )
 
       val content = ClassGenerator.generateClass(module)
@@ -85,7 +86,8 @@ class ClassGeneratorSpec extends FunSpec {
         List(),
         List(),
         None,
-        List()
+        List(),
+        None
       )
 
       val content = ClassGenerator.generateClass(module)
@@ -124,7 +126,8 @@ class ClassGeneratorSpec extends FunSpec {
         List(),
         List(),
         None,
-        List()
+        List(),
+        None
       )
 
       val content = ClassGenerator.generateClass(module)
@@ -153,7 +156,8 @@ class ClassGeneratorSpec extends FunSpec {
         List(),
         List("author1", "author2"),
         None,
-        List()
+        List(),
+        None
       )
 
       val content = ClassGenerator.generateClass(module)
@@ -182,7 +186,8 @@ class ClassGeneratorSpec extends FunSpec {
         List(),
         List(),
         Some("1.8"),
-        List()
+        List(),
+        None
       )
 
       val content = ClassGenerator.generateClass(module)
@@ -213,7 +218,80 @@ class ClassGeneratorSpec extends FunSpec {
         List(),
         List(),
         None,
-        List("The cake is a lie", "You don't bury the survivors")
+        List("The cake is a lie", "You don't bury the survivors"),
+        None
+      )
+
+      val content = ClassGenerator.generateClass(module)
+
+      val javadocs = findJavadocs(content)
+
+      assertResult (expected) { javadocs }
+    }
+
+    it ("should mark the class as deprecated, if the deprecated key has a value") {
+
+      val expected = List(
+        """/**
+          | * Lorem ipsum dolor sit amet
+          | * <p>
+          | * @deprecated use other_module instead
+          | */""".stripMargin)
+
+      val module = ModuleMetadata(
+        "AModule",
+        "a_module",
+        "test",
+        Some("Lorem ipsum dolor sit amet"),
+        None,
+        List(),
+        List(),
+        List(),
+        None,
+        List(),
+        Some("use other_module instead")
+      )
+
+      val content = ClassGenerator.generateClass(module)
+
+      val javadocs = findJavadocs(content)
+
+      assertResult (expected) { javadocs }
+    }
+
+    it ("should mark an option as deprecated if the description contains the word 'depreacted'") {
+
+      val expected = List(
+        """/**
+          | * Lorem ipsum dolor sit amet
+          | */""",
+        """    /**
+          |     * Curabitur vel blandit elit. It's DEPRECATED, use another_option instead.
+          |     * <p>
+          |     * @deprecated
+          |     */"""
+      ).map(_.stripMargin)
+
+      val module = ModuleMetadata(
+        "AModule",
+        "a_module",
+        "test",
+        Some("Lorem ipsum dolor sit amet"),
+        None,
+        List(
+          OptionMetadata(
+            "anOption",
+            "an_option",
+            true,
+            Some("Curabitur vel blandit elit. It's DEPRECATED, use another_option instead."),
+            None,
+            None,
+            List())),
+        List(),
+        List(),
+        None,
+        List(),
+        None
       )
 
       val content = ClassGenerator.generateClass(module)
