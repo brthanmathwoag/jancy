@@ -1,4 +1,4 @@
-package eu.tznvy.jancy.modulesgen.model
+package eu.tznvy.jancy.modulesgen.discovery.model
 
 /**
   * Represents module's parameter

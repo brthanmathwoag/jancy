@@ -2,45 +2,28 @@ package eu.tznvy.jancy.modulesgen.codegeneration
 
 import java.util.regex.Pattern
 
-import com.github.jknack.handlebars.context.FieldValueResolver
-import com.github.jknack.handlebars.{Context, Handlebars, Template}
-import com.github.jknack.handlebars.io.ClassPathTemplateLoader
-import eu.tznvy.jancy.modulesgen.model.{Choices, ModuleMetadata, OptionAliasMetadata, OptionMetadata}
+import eu.tznvy.jancy.modulesgen.codegeneration.model._
+import eu.tznvy.jancy.modulesgen.discovery.model.{Choices, ModuleMetadata, OptionAliasMetadata, OptionMetadata}
 
 /**
   * Generates wrapper source code based on ModuleMetadata via Handlebars
   */
-object ClassGenerator {
+object ModuleClassFactory {
 
   private lazy val deprecationPattern = Pattern.compile("deprecated", Pattern.CASE_INSENSITIVE)
 
-  def generateClass(moduleMetadata: ModuleMetadata): String =
-    template(createContext(moduleMetadata))
-
-  private lazy val template: Template =
-    new Handlebars(
-      new ClassPathTemplateLoader("/templates")
-    ).compile("Class")
-
-  private def createContext(moduleMetadata: ModuleMetadata): Context =
-    Context
-      .newBuilder(buildModelForHandlebars(moduleMetadata))
-      //workaround to access properties without javabean getters/setters
-      .resolver(FieldValueResolver.INSTANCE)
-      .build()
-
-  private def buildModelForHandlebars(moduleMetadata: ModuleMetadata): HandlebarsModule =
-    HandlebarsModule(
+  def build(moduleMetadata: ModuleMetadata): ModuleClass =
+    ModuleClass(
       moduleMetadata.className,
       moduleMetadata.originalName,
       moduleMetadata.namespace,
       formatJavadoc(
-        getHandlebarsModuleDescription(moduleMetadata),
+        buildModuleComment(moduleMetadata),
         isMemberJavadoc = false),
       moduleMetadata
         .options
         .filter(_.originalName != "free_form")
-        .flatMap(buildHandlebarsSetters(moduleMetadata.className))
+        .flatMap(buildSetters(moduleMetadata.className))
         .groupBy({ o => (o.name, o.getClass) })
         .map(_._2.head)
         .toArray
@@ -49,15 +32,15 @@ object ClassGenerator {
         .options
         .filter({ o => o.choices.isDefined && o.choices.flatMap(pickBoolValues).isEmpty })
         .map(_.choices.get)
-        .map(buildHandlebarsChoices)
+        .map(buildEnum)
         .toArray,
       moduleMetadata.options.exists(_.originalName == "free_form"),
       moduleMetadata.deprecated.nonEmpty
     )
 
-  private def buildHandlebarsSetters(className: String)(o: OptionMetadata): List[HandlebarsSetter] = {
+  private def buildSetters(className: String)(o: OptionMetadata): List[PropertySetter] = {
     val description = formatJavadoc(
-      getHandlebarsOptionDescription(o),
+      buildPropertyComment(o),
       isMemberJavadoc = true)
 
     (OptionAliasMetadata(o.name, o.originalName) :: o.aliases.toList)
@@ -126,23 +109,23 @@ object ClassGenerator {
     trueValue.flatMap({ t => falseValue.map({ f => (t, f) }) })
   }
 
-  private def buildHandlebarsChoices(cs: Choices): HandlebarsChoices =
-    HandlebarsChoices(
+  private def buildEnum(cs: Choices): PropertyEnum =
+    PropertyEnum(
       cs.name,
-      choices = cs.choices.map({ c =>
-        HandlebarsChoice(
+      values = cs.choices.map({ c =>
+        EnumValue(
           c.name,
           c.originalName)
       }).toArray
     )
 
-  private def getHandlebarsOptionDescription(o: OptionMetadata): String = {
+  private def buildPropertyComment(o: OptionMetadata): String = {
     val description = o.description.getOrElse(s"This is a wrapper for ${o.originalName} parameter")
     val deprecated = if (deprecationPattern.matcher(description).find) "@deprecated" else ""
     Seq(description, deprecated).filter(_.nonEmpty).mkString("\n")
   }
 
-  private def getHandlebarsModuleDescription(moduleMetadata: ModuleMetadata): String = {
+  private def buildModuleComment(moduleMetadata: ModuleMetadata): String = {
 
     val description = moduleMetadata
       .description
@@ -197,73 +180,4 @@ object ClassGenerator {
 
   private def insertParagraphs(text: String): String =
     text.replace("\n", "\n<p>\n")
-
-  private case class HandlebarsModule(
-    name: String,
-    originalName: String,
-    namespace: String,
-    javadoc: String,
-    options: Array[HandlebarsSetter],
-    choices: Array[HandlebarsChoices],
-    isFreeform: Boolean,
-    isDeprecated: Boolean
-  )
-
-  private case class StringSetter(
-    override val name: String,
-    override val originalName: String,
-    override val javadoc: String,
-    override val className: String,
-    override val isDeprecated: Boolean
-  ) extends HandlebarsSetter(
-    name, originalName, javadoc, className, isDeprecated
-  )
-
-  private case class EnumSetter(
-    override val name: String,
-    override val originalName: String,
-    override val javadoc: String,
-    override val className: String,
-    override val isDeprecated: Boolean,
-    typeName: String
-  ) extends HandlebarsSetter(
-    name, originalName, javadoc, className, isDeprecated
-  )
-
-  private case class BoolSetter(
-    override val name: String,
-    override val originalName: String,
-    override val javadoc: String,
-    override val className: String,
-    override val isDeprecated: Boolean,
-    trueValue: String,
-    falseValue: String
-  ) extends HandlebarsSetter(
-    name, originalName, javadoc, className, isDeprecated
-  )
-
-  private class HandlebarsSetter(
-    val name: String,
-    val originalName: String,
-    val javadoc: String,
-    val className: String,
-    val isDeprecated: Boolean
-  ) {
-    val setterType = getClass.getSimpleName
-  }
-
-  private case class HandlebarsModifier(
-    name: String,
-    originalName: String
-  )
-
-  private case class HandlebarsChoices(
-    name: String,
-    choices: Array[HandlebarsChoice]
-  )
-
-  private case class HandlebarsChoice(
-    name: String,
-    originalName: String
-  )
 }

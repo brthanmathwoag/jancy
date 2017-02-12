@@ -2,13 +2,13 @@ package eu.tznvy.jancy.modulesgen.codegeneration
 
 import org.scalatest.FunSpec
 
-import eu.tznvy.jancy.modulesgen.model.{ModuleMetadata, OptionMetadata}
+import eu.tznvy.jancy.modulesgen.discovery.model.{ModuleMetadata, OptionMetadata}
 
 import scala.annotation.tailrec
 
-class ClassGeneratorSpec extends FunSpec {
+class ModuleClassFactorySpec extends FunSpec {
 
-  describe ("The ClassGenerator") {
+  describe ("The ModuleClassFactory") {
 
     it ("should format multi-line javadocs with paragraphs") {
 
@@ -40,9 +40,9 @@ class ClassGeneratorSpec extends FunSpec {
         None
       )
 
-      val content = ClassGenerator.generateClass(module)
+      val moduleClass = ModuleClassFactory.build(module)
 
-      val output = findJavadocs(content).head
+      val output = moduleClass.javadoc
 
       assertResult (expected) { output }
     }
@@ -90,11 +90,9 @@ class ClassGeneratorSpec extends FunSpec {
         None
       )
 
-      val content = ClassGenerator.generateClass(module)
+      val moduleClass = ModuleClassFactory.build(module)
 
-      val javadocs = findJavadocs(content)
-
-      assertResult (expected) { javadocs }
+      assertResult (expected) { List(moduleClass.javadoc, moduleClass.setters.head.javadoc) }
     }
 
     it ("should render a placeholder javadoc if the description is empty") {
@@ -130,21 +128,19 @@ class ClassGeneratorSpec extends FunSpec {
         None
       )
 
-      val content = ClassGenerator.generateClass(module)
+      val moduleClass = ModuleClassFactory.build(module)
 
-      val javadocs = findJavadocs(content)
-
-      assertResult (expected) { javadocs }
+      assertResult (expected) { List(moduleClass.javadoc, moduleClass.setters.head.javadoc) }
     }
 
     it ("should include authors of the module in the description, if provided") {
 
-      val expected = List(
+      val expected =
         """/**
           | * Lorem ipsum dolor sit amet
           | * <p>
           | * Authors: author1, author2
-          | */""".stripMargin)
+          | */""".stripMargin
 
       val module = ModuleMetadata(
         "AModule",
@@ -160,21 +156,21 @@ class ClassGeneratorSpec extends FunSpec {
         None
       )
 
-      val content = ClassGenerator.generateClass(module)
+      val moduleClass = ModuleClassFactory.build(module)
 
-      val javadocs = findJavadocs(content)
+      val output = moduleClass.javadoc
 
-      assertResult (expected) { javadocs }
+      assertResult (expected) { output }
     }
 
     it ("should include the version of Ansible in which the module was introduced in the description, if provided") {
 
-      val expected = List(
+      val expected =
         """/**
           | * Lorem ipsum dolor sit amet
           | * <p>
           | * Version added: 1.8
-          | */""".stripMargin)
+          | */""".stripMargin
 
       val module = ModuleMetadata(
         "AModule",
@@ -190,23 +186,23 @@ class ClassGeneratorSpec extends FunSpec {
         None
       )
 
-      val content = ClassGenerator.generateClass(module)
+      val moduleClass = ModuleClassFactory.build(module)
 
-      val javadocs = findJavadocs(content)
+      val output = moduleClass.javadoc
 
-      assertResult (expected) { javadocs }
+      assertResult (expected) { output }
     }
 
     it ("should include the notes in the description, if provided") {
 
-      val expected = List(
+      val expected =
         """/**
           | * Lorem ipsum dolor sit amet
           | * <p>
           | * The cake is a lie
           | * <p>
           | * You don't bury the survivors
-          | */""".stripMargin)
+          | */""".stripMargin
 
       val module = ModuleMetadata(
         "AModule",
@@ -222,21 +218,21 @@ class ClassGeneratorSpec extends FunSpec {
         None
       )
 
-      val content = ClassGenerator.generateClass(module)
+      val moduleClass = ModuleClassFactory.build(module)
 
-      val javadocs = findJavadocs(content)
+      val output = moduleClass.javadoc
 
-      assertResult (expected) { javadocs }
+      assertResult (expected) { output }
     }
 
     it ("should mark the class as deprecated, if the deprecated key has a value") {
 
-      val expected = List(
+      val expected =
         """/**
           | * Lorem ipsum dolor sit amet
           | * <p>
           | * @deprecated use other_module instead
-          | */""".stripMargin)
+          | */""".stripMargin
 
       val module = ModuleMetadata(
         "AModule",
@@ -252,11 +248,11 @@ class ClassGeneratorSpec extends FunSpec {
         Some("use other_module instead")
       )
 
-      val content = ClassGenerator.generateClass(module)
+      val moduleClass = ModuleClassFactory.build(module)
 
-      val javadocs = findJavadocs(content)
+      val output = moduleClass.javadoc
 
-      assertResult (expected) { javadocs }
+      assertResult (expected) { output }
     }
 
     it ("should mark an option as deprecated if the description contains the word 'depreacted'") {
@@ -294,28 +290,10 @@ class ClassGeneratorSpec extends FunSpec {
         None
       )
 
-      val content = ClassGenerator.generateClass(module)
+      val moduleClass = ModuleClassFactory.build(module)
 
-      val javadocs = findJavadocs(content)
-
-      assertResult (expected) { javadocs }
+      assertResult (expected) { List(moduleClass.javadoc, moduleClass.setters.head.javadoc) }
     }
-  }
-
-  private def findJavadocs(content: String): List[String] = {
-    @tailrec
-    def loop(javadocs: List[String], text: Seq[String]): List[String] = {
-      val start = text.dropWhile(l => !l.trim.startsWith("/**"))
-      if (start.isEmpty) javadocs
-      else {
-        val javadocWithoutLastLine = start.takeWhile(l => !l.trim.startsWith("*/"))
-        val lastCommentLine = start.drop(javadocWithoutLastLine.length)
-        val javadoc = javadocWithoutLastLine ++ Seq(lastCommentLine.head)
-        val rest = lastCommentLine.tail
-        loop(javadoc.mkString("\n") :: javadocs, rest)
-      }
-    }
-    loop(List(), content.split("\n")).reverse
   }
 }
 

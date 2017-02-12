@@ -19,12 +19,12 @@ public class {{ name }} extends Action {
     public String getModuleName() {
         return "{{ originalName }}";
     }
-    {{# each options }}
+    {{# each setters }}
 {{> (lookup setterType) }}
     {{/ each }}
-    {{# each choices }}
+    {{# each enums }}
     public enum {{ name }} {
-        {{# each choices }}{{ name }}("{{ originalName }}"){{#unless @last }},{{/unless }}
+        {{# each values }}{{ name }}("{{ originalName }}"){{#unless @last }},{{/unless }}
         {{/ each }};
 
         private final String value;

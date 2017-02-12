@@ -1,7 +1,7 @@
 package eu.tznvy.jancy.modulesgen.specialcases.modules
 
 import eu.tznvy.jancy.modulesgen.helpers.CapitalizationHelper
-import eu.tznvy.jancy.modulesgen.model.Choice
+import eu.tznvy.jancy.modulesgen.discovery.model.Choice
 import eu.tznvy.jancy.modulesgen.specialcases.SpecialCase
 
 object DockerContainer extends SpecialCase {

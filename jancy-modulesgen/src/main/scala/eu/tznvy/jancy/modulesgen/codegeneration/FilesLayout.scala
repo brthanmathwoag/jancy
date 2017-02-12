@@ -2,7 +2,7 @@ package eu.tznvy.jancy.modulesgen.codegeneration
 
 import java.nio.file.{Files, Paths, Path}
 
-import eu.tznvy.jancy.modulesgen.model.ModuleMetadata
+import eu.tznvy.jancy.modulesgen.discovery.model.ModuleMetadata
 
 /**
   * Saves module wrapper sourcecode in an appropriate package

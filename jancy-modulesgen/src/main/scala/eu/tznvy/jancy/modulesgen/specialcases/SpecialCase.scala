@@ -1,6 +1,6 @@
 package eu.tznvy.jancy.modulesgen.specialcases
 
-import eu.tznvy.jancy.modulesgen.model.Choice
+import eu.tznvy.jancy.modulesgen.discovery.model.Choice
 
 trait SpecialCase {
   def moduleName: String

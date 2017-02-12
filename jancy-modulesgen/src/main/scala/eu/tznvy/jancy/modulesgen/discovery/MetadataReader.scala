@@ -4,7 +4,7 @@ import java.io.File
 import java.util.regex.Pattern
 
 import eu.tznvy.jancy.modulesgen.helpers.CapitalizationHelper
-import eu.tznvy.jancy.modulesgen.model.{Choice, Choices, ModuleMetadata, OptionAliasMetadata, OptionMetadata}
+import eu.tznvy.jancy.modulesgen.discovery.model.{Choice, Choices, ModuleMetadata, OptionAliasMetadata, OptionMetadata}
 import eu.tznvy.jancy.modulesgen.specialcases.{SpecialCases, SpecialCase}
 import org.yaml.snakeyaml.Yaml
 import resource._

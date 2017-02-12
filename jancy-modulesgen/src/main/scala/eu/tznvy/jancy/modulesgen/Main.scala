@@ -1,10 +1,11 @@
 package eu.tznvy.jancy.modulesgen
 
 import eu.tznvy.jancy.modulesgen.helpers.Filesystem
-import eu.tznvy.jancy.modulesgen.discovery.{MetadataReader, MetadataFilesDiscoverer}
-import eu.tznvy.jancy.modulesgen.codegeneration.{ClassGenerator, FilesLayout}
+import eu.tznvy.jancy.modulesgen.discovery.{MetadataFilesDiscoverer, MetadataReader}
+import eu.tznvy.jancy.modulesgen.codegeneration.{FilesLayout, HandlebarsRenderer, ModuleClassFactory}
 import resource._
 import java.nio.file.Paths
+
 import scala.io.Source
 
 object Main {
@@ -27,7 +28,7 @@ object Main {
           .getOrElse(false)
        })
       .map(MetadataReader.readModuleMetadata)
-      .map({ m => (m, ClassGenerator.generateClass(m)) })
+      .map({ m => (m, HandlebarsRenderer.render(ModuleClassFactory.build(m))) })
       .foreach((filesLayout.saveModuleSource _).tupled)
   }
 }
