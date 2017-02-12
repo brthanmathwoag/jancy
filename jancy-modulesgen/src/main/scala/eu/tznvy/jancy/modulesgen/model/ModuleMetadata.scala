@@ -12,6 +12,7 @@ package eu.tznvy.jancy.modulesgen.model
   * @param documentationFragments   external documentation fragments to merge
   * @param authors            the authors of the original module
   * @param versionAdded       Ansible version in which the module was introduced
+  * @param notes              additional notes
   */
 case class ModuleMetadata(
   className: String,
@@ -22,5 +23,6 @@ case class ModuleMetadata(
   options: Seq[OptionMetadata],
   documentationFragments: Seq[String],
   authors: Seq[String],
-  versionAdded: Option[String]
+  versionAdded: Option[String],
+  notes: Seq[String]
 )

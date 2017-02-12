@@ -142,7 +142,9 @@ object ClassGenerator {
 
     val versionAdded = moduleMetadata.versionAdded.map("Version added: " + _).getOrElse("")
 
-    Seq(description, authors, versionAdded).filter(_.nonEmpty).mkString("\n")
+    val notes = moduleMetadata.notes.mkString("\n")
+
+    Seq(description, notes, authors, versionAdded).filter(_.nonEmpty).mkString("\n")
   }
 
   private def formatJavadoc(text: String, isMemberJavadoc: Boolean): String = {

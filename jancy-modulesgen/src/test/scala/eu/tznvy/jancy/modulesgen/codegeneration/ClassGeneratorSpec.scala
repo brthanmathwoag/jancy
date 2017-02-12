@@ -35,7 +35,8 @@ class ClassGeneratorSpec extends FunSpec {
         List(),
         List(),
         List(),
-        None
+        None,
+        List()
       )
 
       val content = ClassGenerator.generateClass(module)
@@ -83,7 +84,8 @@ class ClassGeneratorSpec extends FunSpec {
             List())),
         List(),
         List(),
-        None
+        None,
+        List()
       )
 
       val content = ClassGenerator.generateClass(module)
@@ -121,7 +123,9 @@ class ClassGeneratorSpec extends FunSpec {
             List())),
         List(),
         List(),
-        None)
+        None,
+        List()
+      )
 
       val content = ClassGenerator.generateClass(module)
 
@@ -148,7 +152,8 @@ class ClassGeneratorSpec extends FunSpec {
         List(),
         List(),
         List("author1", "author2"),
-        None
+        None,
+        List()
       )
 
       val content = ClassGenerator.generateClass(module)
@@ -176,7 +181,39 @@ class ClassGeneratorSpec extends FunSpec {
         List(),
         List(),
         List(),
-        Some("1.8")
+        Some("1.8"),
+        List()
+      )
+
+      val content = ClassGenerator.generateClass(module)
+
+      val javadocs = findJavadocs(content)
+
+      assertResult (expected) { javadocs }
+    }
+
+    it ("should include the notes in the description, if provided") {
+
+      val expected = List(
+        """/**
+          | * Lorem ipsum dolor sit amet
+          | * <p>
+          | * The cake is a lie
+          | * <p>
+          | * You don't bury the survivors
+          | */""".stripMargin)
+
+      val module = ModuleMetadata(
+        "AModule",
+        "a_module",
+        "test",
+        Some("Lorem ipsum dolor sit amet"),
+        None,
+        List(),
+        List(),
+        List(),
+        None,
+        List("The cake is a lie", "You don't bury the survivors")
       )
 
       val content = ClassGenerator.generateClass(module)
