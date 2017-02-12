@@ -32,6 +32,8 @@ object MetadataReader {
       if (documentationFragments.contains("files")) mergeOptionsWithCommonArgs(explicitOptions)
       else explicitOptions
 
+    val versionAdded = navigate[Any](documentation, List("version_added")).map(_.toString).headOption
+
     ModuleMetadata(
       className,
       name,
@@ -40,7 +42,8 @@ object MetadataReader {
       shortDescription,
       options,
       documentationFragments,
-      authors)
+      authors,
+      versionAdded)
   }
 
   private def readDocumentation(file: File): Any = {

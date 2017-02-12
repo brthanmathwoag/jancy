@@ -34,7 +34,9 @@ class ClassGeneratorSpec extends FunSpec {
         None,
         List(),
         List(),
-        List())
+        List(),
+        None
+      )
 
       val content = ClassGenerator.generateClass(module)
 
@@ -80,7 +82,9 @@ class ClassGeneratorSpec extends FunSpec {
             None,
             List())),
         List(),
-        List())
+        List(),
+        None
+      )
 
       val content = ClassGenerator.generateClass(module)
 
@@ -116,7 +120,8 @@ class ClassGeneratorSpec extends FunSpec {
             None,
             List())),
         List(),
-        List())
+        List(),
+        None)
 
       val content = ClassGenerator.generateClass(module)
 
@@ -142,7 +147,36 @@ class ClassGeneratorSpec extends FunSpec {
         None,
         List(),
         List(),
-        List("author1", "author2")
+        List("author1", "author2"),
+        None
+      )
+
+      val content = ClassGenerator.generateClass(module)
+
+      val javadocs = findJavadocs(content)
+
+      assertResult (expected) { javadocs }
+    }
+
+    it ("should include the version of Ansible in which the module was introduced in the description, if provided") {
+
+      val expected = List(
+        """/**
+          | * Lorem ipsum dolor sit amet
+          | * <p>
+          | * Version added: 1.8
+          | */""".stripMargin)
+
+      val module = ModuleMetadata(
+        "AModule",
+        "a_module",
+        "test",
+        Some("Lorem ipsum dolor sit amet"),
+        None,
+        List(),
+        List(),
+        List(),
+        Some("1.8")
       )
 
       val content = ClassGenerator.generateClass(module)
