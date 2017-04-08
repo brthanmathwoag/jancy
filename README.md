@@ -70,6 +70,23 @@ Add `jancy-common` as a dependency. If you use Maven:
 </project>
 ```
 
+If you use Gradle:
+
+```ruby
+repositories {
+    mavenCentral()
+    maven {
+        url {
+            "https://jancy.tznvy.eu/m2"
+        }
+    }
+}
+
+dependencies {
+    compile group: 'eu.tznvy', name: 'jancy-common', version: '0.1.0-SNAPSHOT'
+}
+```
+
 If you use sbt:
 
 ```scala
