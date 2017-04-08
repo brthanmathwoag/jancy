@@ -7,7 +7,8 @@ object SpecialCases {
   private val allObjects: Map[String, SpecialCase] =
     Seq(Blockinfile, Lineinfile, BigipDeviceSshd, IpmiBoot, IpmiPower,
       BigipVirtualServer, PostgresqlUser, PamLimits, DockerContainer, WinFeature,
-      WinLineinfile)
+      WinLineinfile, Template, CnosInterface, CnosPortchannel, CnosBgp, Parted,
+      CnosVlan, WinTemplate, Ec2MetricAlarm)
       .map({ o => (o.moduleName, o) })
       .toMap
 

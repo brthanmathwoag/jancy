@@ -59,7 +59,8 @@ object MetadataReader {
         .takeWhile(!isDocumentationEnd(_))
         .mkString("\n")
         .replace("\\\n", "")  //multi-line python string escapes
-        .replace("\\\\", "\\"))
+        .replace("\\\\", "\\")
+        .replace("\\'", "'"))
       .opt
       .getOrElse("")
     //TODO: escape \w\([^\)]+\) -- C(...), etc
@@ -74,11 +75,11 @@ object MetadataReader {
     Pattern.matches("^['\"]{3}.*", line)
 
   private def resolveNamespace(file: File): String =
-    //TODO: will break if the path doesn't start with 'submodules/'
+    //TODO: this expects the paths to start with 'submodules/ansible/lib/ansible/modules/'
     "eu.tznvy.jancy.modules." + file
       .getPath
       .split(File.separatorChar)
-      .drop(2)
+      .drop(5)
       .init
       .map(_.replace("_", ""))
       .mkString(".")
@@ -183,14 +184,18 @@ object MetadataReader {
     else escaped
   }
 
-  private def escapeOptionName(name: String): String =
-    name
+  private def escapeOptionName(name: String): String = {
+    val escaped = name
       //workaround for storage.netapp.NetappEHostgroup
       .replace("-", "_")
       //workaround for packaging.os.Urpmi
       .replace(":", "")
       //workaround for DockerLogin
       .replace(".", "_")
+
+    if (escaped.head.isDigit) "a" + escaped
+    else escaped
+  }
 
   private def escapeEndOfComment(s: String): String =
     //workaround for system.cron

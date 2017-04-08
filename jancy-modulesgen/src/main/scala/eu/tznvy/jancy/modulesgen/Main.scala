@@ -13,8 +13,7 @@ object Main {
   def main(args: Array[String]): Unit = {
 
     val ansibleModulesPaths = List(
-        "submodules/ansible-modules-core",
-        "submodules/ansible-modules-extras")
+        "submodules/ansible/lib/ansible/modules")
 
     val filesLayout = new FilesLayout(
       Paths.get("jancy-modules/src/main/java/"))
