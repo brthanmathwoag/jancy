@@ -133,7 +133,9 @@ cd HelloWorld
 ansible-playbook -i inventory site.yml
 ```
 
-For an overview of available features, see [Configuration Concepts page](https://jancy.tznvy.eu/concepts).
+For a more in-depth tutorial, see [Getting started](https://jancy.tznvy.eu/getting-started-versions).
+For an overview of available features, see [Configuration Concepts](https://jancy.tznvy.eu/concepts).
+For a complete reference of available modules, see [API reference](https://jancy.tznvy.eu/reference)
 
 ## Examples
 
