@@ -9,8 +9,20 @@ import eu.tznvy.jancy.modules.system.Ping
 
 class PlaybookRendererSpec extends FunSpec {
   describe("The PlaybookRenderer") {
-    it("should render inventories to files named after the inventory") {
+    it ("should render a single inventory to a file named after the inventory") {
+      val playbook = new Playbook("c1")
+        .inventories(new Inventory("inventory").hosts(new Host("h1")))
 
+      val filesystem = new InMemoryFilesystem
+      val playbookRenderer = new PlaybookRenderer(filesystem)
+      playbookRenderer.render(playbook, Paths.get("/c1"))
+
+      val expected = Paths.get("/", "c1", "inventory")
+      assert(filesystem.testPath(expected))
+      assert(filesystem.readFile(expected).map(_.length).getOrElse(0) > 0)
+    }
+
+    it ("should render multiple inventories to a 'hosts' file in a directory named after the inventory") {
       val playbook = new Playbook("c1")
         .inventories(
           new Inventory("production").hosts(new Host("h1")),
@@ -22,11 +34,22 @@ class PlaybookRendererSpec extends FunSpec {
       playbookRenderer.render(playbook, Paths.get("/c1"))
 
       Seq("production", "stage", "dev")
-        .map(Paths.get("/", "c1", _))
+        .map(Paths.get("/", "c1", "inventories", _, "hosts"))
         .foreach({ p =>
           assert(filesystem.testPath(p))
           assert(filesystem.readFile(p).map(_.length).getOrElse(0) > 0)
         })
+    }
+
+    it ("should allow adding a group to several inventories") {
+      val group = new Group("g1")
+      val inventory1 = new Inventory("i1").groups(group)
+      val inventory2 = new Inventory("i2").groups(group)
+      val playbook = new Playbook("c1").inventories(inventory1, inventory2)
+
+      val filesystem = new InMemoryFilesystem
+      val playbookRenderer = new PlaybookRenderer(filesystem)
+      playbookRenderer.render(playbook, Paths.get("/c1"))
     }
 
     it("should render plays in /site.yml file") {
@@ -235,7 +258,7 @@ class PlaybookRendererSpec extends FunSpec {
 
     it("should render vars for subgroups") {
 
-    val playbook = new Playbook("site")
+      val playbook = new Playbook("site")
         .inventories(
           new Inventory("inventory")
             .groups(
@@ -254,6 +277,41 @@ class PlaybookRendererSpec extends FunSpec {
       val expectedPath = Paths.get("/site/group_vars/g2")
       assert(filesystem.testPath(expectedPath))
       assert(filesystem.readFile(expectedPath).map(_.length).getOrElse(0) > 0)
+    }
+
+    it ("should keep group vars for each inventory separately") {
+
+      val g1 = new Group("g1")
+        .vars(Map[String, AnyRef](
+          "vg1" -> "foo",
+          "vg2" -> "bar"
+        ).asJava)
+
+      val i1 = new Inventory("i1")
+        .groups(
+          g1
+            .vars(Map[String, AnyRef](
+              "vg2" -> "bar1",
+              "vg3" -> "baz1"
+            ).asJava))
+
+      val i2 = new Inventory("i2")
+        .groups(
+          g1
+            .vars(Map[String, AnyRef](
+              "vg2" -> "bar2",
+              "vg4" -> "baz2"
+            ).asJava))
+
+      val playbook = new Playbook("p1")
+        .inventories(i1, i2)
+
+      val filesystem = new InMemoryFilesystem
+      val playbookRenderer = new PlaybookRenderer(filesystem)
+      playbookRenderer.render(playbook, Paths.get("/p1"))
+
+      assert(filesystem.readFile(Paths.get("/p1/inventories/i1/group_vars/g1")) == Some("vg2: bar1\nvg3: baz1\n"))
+      assert(filesystem.readFile(Paths.get("/p1/inventories/i2/group_vars/g1")) ==  Some("vg2: bar2\nvg4: baz2\n"))
     }
   }
 }

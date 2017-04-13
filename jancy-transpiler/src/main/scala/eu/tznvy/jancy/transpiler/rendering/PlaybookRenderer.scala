@@ -17,42 +17,50 @@ class PlaybookRenderer(filesystem: Filesystem) {
   def render(playbook: Playbook, root: Path): Unit = {
     filesystem.createDirectories(root)
 
+    val multiinventory = playbook.getInventories.length > 1
+
     playbook
       .getInventories
-      .map({ i => (makeInventoryPath(root, i), InventoryRenderer.render(i)) })
+      .map({ i => (makeInventoryPath(root, i, multiinventory), InventoryRenderer.render(i)) })
       .foreach({ case (p, c) => filesystem.writeFile(p, c) })
 
     //TODO: these should probably be rendered by InventoryRenderer
-    saveVars(
-      root.resolve("host_vars"),
-      playbook
-        .getInventories
-        .flatMap({ i =>
-          val hostsInGroups =
-            GroupsHelper
-              .flattenSubgroups(i.getGroups)
-              .flatMap(_.getHosts)
-          i.getHosts ++ hostsInGroups
-        })
-        .groupBy(_.getName)
-        .toArray
-        .map({ g => (g._1, g._2.flatMap(_.getVars.asScala.toSet).toMap) })
-    )
+    playbook
+      .getInventories
+      .foreach({ i =>
+        val allHosts =
+          GroupsHelper
+            .flattenSubgroups(i.getGroups)
+            .flatMap(_.getHosts) ++ i.getHosts
 
-    saveVars(
-      root.resolve("group_vars"),
-      GroupsHelper.flattenSubgroups(
-        playbook
-          .getInventories
-          .flatMap(_.getGroups))
-        .toArray
-        .map({ g => (g.getName, g.getVars.asScala.toMap) }))
+        val varsPerHost = allHosts
+          .groupBy(_.getName)
+          .map({ g => (
+            g._1,
+            g._2
+              .flatMap(_.getVars.asScala.toSet)
+              .toMap) })
+          .toArray
 
-    saveVars(
-      root.resolve("group_vars"),
-      playbook
-        .getInventories
-        .map({ i => ("all", i.getVars.asScala.toMap) }))
+        val inventoryDirectory = makeInventoryPath(root, i, multiinventory).getParent
+
+        saveVars(
+          inventoryDirectory.resolve("host_vars"),
+          varsPerHost)
+
+        saveVars(
+          inventoryDirectory.resolve("group_vars"),
+          GroupsHelper
+            .flattenSubgroups(i.getGroups)
+            .toArray
+            .map({ g => (g.getName, g.getVars.asScala.toMap) })
+        )
+
+        saveVars(
+          inventoryDirectory.resolve("group_vars"),
+          Array(("all", i.getVars.asScala.toMap))
+        )
+      })
 
     filesystem.writeFile(
       makeMainPlaybookPath(root),
@@ -61,11 +69,12 @@ class PlaybookRenderer(filesystem: Filesystem) {
     val roleRenderer = new RoleRenderer(filesystem)
 
     playbook.getRoles
-        .foreach({ r => roleRenderer.render(r, makeRolePath(root, r)) })
+      .foreach({ r => roleRenderer.render(r, makeRolePath(root, r)) })
   }
 
-  private def makeInventoryPath(root: Path, inventory: Inventory): Path =
-    root.resolve(inventory.getName)
+  private def makeInventoryPath(root: Path, inventory: Inventory, multiinventory: Boolean): Path =
+    if (multiinventory) root.resolve("inventories").resolve(inventory.getName).resolve("hosts")
+    else root.resolve(inventory.getName)
 
   private def makeMainPlaybookPath(root: Path): Path =
     root.resolve("site.yml")
