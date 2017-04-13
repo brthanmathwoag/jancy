@@ -29,11 +29,15 @@ object Main {
     val playbookRenderer = new PlaybookRenderer(filesystem)
     val contentFilesExtractor = new ContentFilesExtractor(filesystem)
 
-    val playbookFactories =
+    val maybePlaybookFactories =
       managed(new JarClassSource(args.jar))
         .map(PlaybookFactoriesDiscoverer.findPlaybookFactories(_, args.classname))
-        .opt
-        .get
+        .either
+
+    if (maybePlaybookFactories.isLeft)
+      throw maybePlaybookFactories.left.get.head
+
+    val playbookFactories = maybePlaybookFactories.right.get
 
     if (playbookFactories.isEmpty) {
       val errorMessage =
