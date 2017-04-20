@@ -3,7 +3,7 @@ package eu.tznvy.jancy.modulesgen.discovery
 import java.io.File
 import java.util.regex.Pattern
 
-import eu.tznvy.jancy.modulesgen.helpers.CapitalizationHelper
+import eu.tznvy.jancy.modulesgen.helpers.{CapitalizationHelper, DocumentMerger}
 import eu.tznvy.jancy.modulesgen.discovery.model.{Choice, Choices, ModuleMetadata, OptionAliasMetadata, OptionMetadata}
 import eu.tznvy.jancy.modulesgen.specialcases.{SpecialCases, SpecialCase}
 import org.yaml.snakeyaml.Yaml
@@ -18,7 +18,7 @@ import scala.io.Source
 object MetadataReader {
 
   def readModuleMetadata(file: File): ModuleMetadata = {
-    val documentation = readDocumentation(file)
+    val documentation = assembleDocumentation(file)
     val namespace = resolveNamespace(file)
     val name = navigate[String](documentation, List("module")).get
     val className = CapitalizationHelper.snakeCaseToPascalCase(name)
@@ -27,10 +27,7 @@ object MetadataReader {
     val specialCase = SpecialCases.get(name)
     val documentationFragments = castAsSeq(navigate[Any](documentation, List("extends_documentation_fragment")))
     val authors = castAsSeq(navigate[Any](documentation, List("author")))
-    val explicitOptions = readOptions(specialCase, documentation)
-    val options =
-      if (documentationFragments.contains("files")) mergeOptionsWithCommonArgs(explicitOptions)
-      else explicitOptions
+    val options = readOptions(specialCase, documentation)
     val versionAdded = navigate[Any](documentation, List("version_added")).map(_.toString).headOption
     val notes = castAsSeq(navigate[Any](documentation, List("notes")))
     val deprecated = navigate[Any](documentation, List("deprecated")).map(_.toString).headOption
@@ -50,11 +47,28 @@ object MetadataReader {
     )
   }
 
-  private def readDocumentation(file: File): Any = {
+  private def assembleDocumentation(file: File): Any = {
+    val base = readDocumentation(file).asInstanceOf[java.util.LinkedHashMap[String, Object]]
+    val fragmentNames = castAsSeq(navigate[Any](base, List("extends_documentation_fragment")))
+    val assembledDocumentation = fragmentNames
+      .foldLeft(base)({ (current, fragmentName) =>
+        val (fragmentFilename, section) = fragmentName.split('.') match {
+          case Array(a, b) => (a, b.toUpperCase)
+          case Array(a) => (a, "DOCUMENTATION")
+        }
+        val fragmentPath = "submodules/ansible/lib/ansible/utils/module_docs_fragments/" + fragmentFilename + ".py"
+        val fragment = readDocumentation(new File(fragmentPath), section).asInstanceOf[java.util.LinkedHashMap[String, Object]]
+        val merged = DocumentMerger.merge(current, fragment)
+        merged
+      })
+    assembledDocumentation
+  }
+
+  private def readDocumentation(file: File, section: String = "DOCUMENTATION"): Any = {
     val content = managed(Source.fromFile(file))
       .map(_
         .getLines
-        .dropWhile(!isDocumentationStart(_))
+        .dropWhile(!isDocumentationStart(_, section))
         .drop(1)
         .takeWhile(!isDocumentationEnd(_))
         .mkString("\n")
@@ -68,11 +82,11 @@ object MetadataReader {
     new Yaml().load(content)
   }
 
-  private def isDocumentationStart(line: String): Boolean =
-    Pattern.matches("^DOCUMENTATION\\s*=\\s*[ur]?['\"]{3}.*", line)
+  private def isDocumentationStart(line: String, section: String): Boolean =
+    Pattern.matches("^\\s*" + section + "\\s*=\\s*[ur]?['\"]{3}.*", line)
 
   private def isDocumentationEnd(line: String): Boolean =
-    Pattern.matches("^['\"]{3}.*", line)
+    Pattern.matches("^\\s*['\"]{3}.*", line)
 
   private def resolveNamespace(file: File): String =
     //TODO: this expects the paths to start with 'submodules/ansible/lib/ansible/modules/'
@@ -217,35 +231,6 @@ object MetadataReader {
       case oneline: String => Some(oneline)
       case _ => None
     }
-
-  private def mergeOptionsWithCommonArgs(options: Seq[OptionMetadata]): Seq[OptionMetadata] = {
-    val optionsMap = options
-      .map({ o => (o.originalName, o) })
-      .toMap
-
-    (fileCommonArgs ++ optionsMap)
-      .values
-      .toList
-  }
-
-  private lazy val fileCommonArgs =
-  //TODO: read these from ansible repo. Info in:
-  // lib/ansible/module_utils/basic.py
-  // lib/ansible/utils/module_docs_fragments/files.py
-    Seq(
-      "src", "mode", "owner", "group", "seuser", "serole", "setype", "follow", "content", "backup", "force",
-      "remote_src", "regexp", "delimiter", "directory_mode", "unsafe_writes", "attributes")
-      .map({ moduleName =>
-        moduleName ->
-        OptionMetadata(
-          CapitalizationHelper.snakeCaseToCamelCase(moduleName),
-          moduleName,
-          false,
-          None,
-          None,
-          None,
-          Seq())
-      }).toMap
 
   private def castAsSeq(maybeNode: Option[Any]): Seq[String] =
     maybeNode match {

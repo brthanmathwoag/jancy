@@ -8,7 +8,7 @@ object SpecialCases {
     Seq(Blockinfile, Lineinfile, BigipDeviceSshd, IpmiBoot, IpmiPower,
       BigipVirtualServer, PostgresqlUser, PamLimits, DockerContainer, WinFeature,
       WinLineinfile, Template, CnosInterface, CnosPortchannel, CnosBgp, Parted,
-      CnosVlan, WinTemplate, Ec2MetricAlarm)
+      CnosVlan, WinTemplate, Ec2MetricAlarm, DimensiondataNetwork)
       .map({ o => (o.moduleName, o) })
       .toMap
 
